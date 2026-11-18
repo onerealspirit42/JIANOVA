@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
-import "@fontsource-variable/inter";
-import "@fontsource/ibm-plex-sans-arabic/arabic-300.css";
-import "@fontsource/ibm-plex-sans-arabic/arabic-400.css";
-import "@fontsource/ibm-plex-sans-arabic/arabic-500.css";
+import "@fontsource-variable/jost";
+import "@fontsource-variable/alexandria";
 import "../globals.css";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 

@@ -2,6 +2,8 @@ import { useId } from "react";
 
 type WordmarkProps = {
   className?: string;
+  /** Hide from assistive tech when a parent already names it (e.g. a link). */
+  decorative?: boolean;
 };
 
 /**
@@ -12,15 +14,16 @@ type WordmarkProps = {
  * follows the surrounding text colour (currentColor); size it with a height
  * or width class, e.g. `h-5` or `w-48`.
  */
-export function Wordmark({ className }: WordmarkProps) {
+export function Wordmark({ className, decorative = false }: WordmarkProps) {
   // Strip characters that are not valid inside a url(#id) reference.
   const clipId = `wm-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
 
   return (
     <svg
       viewBox="0 0 219.62 40"
-      role="img"
-      aria-label="JIANOVA"
+      {...(decorative
+        ? { "aria-hidden": true, focusable: false }
+        : { role: "img", "aria-label": "JIANOVA" })}
       className={className}
     >
       <defs>

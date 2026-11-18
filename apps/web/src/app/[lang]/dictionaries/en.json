@@ -1,39 +1,63 @@
 {
   "meta": {
     "title": "JIANOVA",
-    "description": "A Saudi footwear technology project creating premium running shoes and an innovative digital shopping experience. In development."
+    "description": "A Saudi footwear technology project creating premium running shoes and an innovative digital shopping experience. In development.",
+    "customizeTitle": "Design your pair | JIANOVA"
   },
   "common": {
     "skipToContent": "Skip to content",
     "switchLanguage": "العربية",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "navLabel": "Main",
+    "customize": "Customize",
+    "home": "JIANOVA home"
   },
   "hero": {
-    "status": "In development",
     "title": "Redefining the running experience.",
-    "intro": "JIANOVA is a Saudi footwear technology project focused on creating premium running shoes and an innovative digital shopping experience."
+    "intro": "JIANOVA is a Saudi footwear technology project creating premium running shoes, and a better way to make them yours.",
+    "cta": "Design your pair",
+    "stageLabel": "A 3D running shoe turning slowly",
+    "placeholderNote": "Shown: a simplified placeholder model. The final JIANOVA shoe is still in design."
   },
   "vision": {
     "heading": "Vision",
     "text": "To combine premium footwear design, modern technology, and personalization into one seamless experience."
   },
-  "building": {
-    "heading": "What we are building",
-    "note": "Everything below is in development and not yet available.",
-    "items": [
-      {
-        "title": "Interactive 3D customization",
-        "text": "Explore the shoe from every angle and personalize its colors and components in real time."
-      },
-      {
-        "title": "Premium running footwear",
-        "text": "From Saudi Arabia, with an elegant design and close attention to detail."
-      },
-      {
-        "title": "A considered digital experience",
-        "text": "Fast, smooth, and easy to use on mobile and desktop."
-      }
-    ]
+  "status": {
+    "heading": "Where we are",
+    "text": "JIANOVA is in development. We are designing our first running shoe, and building the 3D configurator you can already try with a placeholder model.",
+    "link": "Try the configurator"
+  },
+  "configurator": {
+    "title": "Design your pair",
+    "intro": "Choose a part, then a color. Changes appear on the shoe right away.",
+    "placeholderNote": "This is a simplified placeholder model for trying the configurator. The final JIANOVA shoe is still in design.",
+    "partsLegend": "Part",
+    "colorsLegend": "Color for {part}",
+    "reset": "Reset to original colors",
+    "hint": "Drag to turn the shoe, scroll or pinch to zoom, and click a part to select it.",
+    "stageLabel": "3D view of the running shoe with your chosen colors",
+    "loading": "Loading the 3D model",
+    "unavailable": "The 3D view could not be shown on this device. You can still choose colors below.",
+    "parts": {
+      "upper": "Upper",
+      "tongue": "Tongue",
+      "laces": "Laces",
+      "collar": "Collar",
+      "heel": "Heel",
+      "midsole": "Midsole",
+      "outsole": "Outsole"
+    },
+    "colors": {
+      "chalk": "Chalk",
+      "dune": "Dune",
+      "lavender": "Lavender",
+      "stone": "Stone",
+      "royal": "Royal purple",
+      "oasis": "Oasis green",
+      "ember": "Ember",
+      "midnight": "Midnight"
+    }
   },
   "notFound": {
     "title": "Page not found",
