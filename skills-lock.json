@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "skills": {
+    "apple-design": {
+      "source": "emilkowalski/skills",
+      "commit": "64eb3deb9a5fbfa041faf783e0bc3fd635872e9c",
+      "sourceType": "github",
+      "skillPath": "skills/apple-design/SKILL.md",
+      "computedHash": "163ba8b42c7d9d5ccb08674266d4727c9ec610b9d876c906b1f29ce5e0d933da"
+    },
+    "better-accessibility": {
+      "source": "jakubkrehel/skills",
+      "commit": "547d415dc10a23e66088eba5aa6664e6e772432c",
+      "sourceType": "github",
+      "skillPath": "skills/better-accessibility/SKILL.md",
+      "computedHash": "52f710d167c6244377a7ddab4d3ec39668bd0980d7975bcf7b5004e98fa0c09f"
+    },
+    "better-colors": {
+      "source": "jakubkrehel/skills",
+      "commit": "547d415dc10a23e66088eba5aa6664e6e772432c",
+      "sourceType": "github",
+      "skillPath": "skills/better-colors/SKILL.md",
+      "computedHash": "6bd97cb922230031c416da89e3e30f31856e7c397d4595c951cced9350a2e0c6"
+    },
+    "better-interface": {
+      "source": "jakubkrehel/skills",
+      "commit": "547d415dc10a23e66088eba5aa6664e6e772432c",
+      "sourceType": "github",
+      "skillPath": "skills/better-interface/SKILL.md",
+      "computedHash": "b9752ca6ad3fb856aed9f66159e73494eba05fbe8e8db68b4b72d0f19ee69f86"
+    },
+    "better-layout": {
+      "source": "jakubkrehel/skills",
+      "commit": "547d415dc10a23e66088eba5aa6664e6e772432c",
+      "sourceType": "github",
+      "skillPath": "skills/better-layout/SKILL.md",
+      "computedHash": "132862dbdc0ca8cc2016257f2db6f0845bc13d0f66cd715b57a62f8529e9bc4c"
+    },
+    "better-typography": {
+      "source": "jakubkrehel/skills",
+      "commit": "547d415dc10a23e66088eba5aa6664e6e772432c",
+      "sourceType": "github",
+      "skillPath": "skills/better-typography/SKILL.md",
+      "computedHash": "46b9c3a581e240b1e3e9f2a34469bfd8fceb075149cadb6ff670e4ee74ab7622"
+    },
+    "better-ui": {
+      "source": "jakubkrehel/skills",
+      "commit": "547d415dc10a23e66088eba5aa6664e6e772432c",
+      "sourceType": "github",
+      "skillPath": "skills/better-ui/SKILL.md",
+      "computedHash": "1b0a17b7b2675ed2bf79ca7120fbc3c37b0f3955d1750293b215ebb6edb5bab3"
+    },
+    "better-writing": {
+      "source": "jakubkrehel/skills",
+      "commit": "547d415dc10a23e66088eba5aa6664e6e772432c",
+      "sourceType": "github",
+      "skillPath": "skills/better-writing/SKILL.md",
+      "computedHash": "2a1272ec964d55720f0aa7b95bf198aa488099950f52f4dbd975906438b955af"
+    }
+  }
+}
