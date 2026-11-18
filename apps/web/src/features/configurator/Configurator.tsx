@@ -2,6 +2,7 @@
 
 import { LazyShoeStage } from "./LazyShoeStage";
 import { useConfigurator } from "./store";
+import type { ViewMessages } from "./ShoeStage";
 import {
   COLOR_IDS,
   COLORS,
@@ -20,10 +21,13 @@ export type ConfiguratorMessages = {
   partsLegend: string;
   colorsLegend: string;
   reset: string;
+  resetDone: string;
+  undo: string;
   hint: string;
   stageLabel: string;
   loading: string;
   unavailable: string;
+  view: ViewMessages;
   parts: Record<PartId, string>;
   colors: Record<ColorId, string>;
 };
@@ -35,6 +39,8 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
   const selectPart = useConfigurator((s) => s.selectPart);
   const setColor = useConfigurator((s) => s.setColor);
   const reset = useConfigurator((s) => s.reset);
+  const undoReset = useConfigurator((s) => s.undoReset);
+  const canUndo = useConfigurator((s) => s.beforeReset !== null);
 
   const selectedColor = design[selectedPart];
 
@@ -49,10 +55,14 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
           highlightTick={selectionTick}
           onSelectPart={selectPart}
           label={messages.stageLabel}
-          messages={{ loading: messages.loading, unavailable: messages.unavailable }}
+          messages={{
+            loading: messages.loading,
+            unavailable: messages.unavailable,
+            view: messages.view,
+          }}
           className="absolute inset-0"
         />
-        <p className="pointer-events-none absolute inset-x-0 bottom-4 px-6 text-center text-xs text-brand-200/80">
+        <p className="pointer-events-none absolute inset-x-0 bottom-4 px-6 text-center text-xs text-balance text-brand-200/80">
           {messages.hint}
         </p>
       </div>
@@ -65,7 +75,7 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
         <h1 id="configurator-title" className="text-3xl font-light text-brand-900">
           {messages.title}
         </h1>
-        <p className="mt-3 text-sm leading-relaxed text-ink-500">{messages.intro}</p>
+        <p className="mt-3 text-sm leading-relaxed text-pretty text-ink-500">{messages.intro}</p>
         {IS_PLACEHOLDER_MODEL && (
           <p className="mt-4 rounded-sm bg-brand-50 px-3 py-2 text-xs leading-relaxed text-brand-700">
             {messages.placeholderNote}
@@ -140,13 +150,30 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
           </p>
         </fieldset>
 
-        <button
-          type="button"
-          onClick={reset}
-          className="mt-8 text-sm text-brand-900 underline underline-offset-8 transition-colors hover:text-brand-500"
-        >
-          {messages.reset}
-        </button>
+        <div className="mt-8 flex flex-wrap items-baseline gap-x-6 gap-y-2">
+          <button
+            type="button"
+            onClick={reset}
+            className="py-2 text-sm text-brand-900 underline underline-offset-8 transition-colors hover:text-brand-500"
+          >
+            {messages.reset}
+          </button>
+          {/* Stays mounted so screen readers announce the text when it appears. */}
+          <p role="status" className="text-sm text-ink-500">
+            {canUndo && (
+              <>
+                {messages.resetDone}{" "}
+                <button
+                  type="button"
+                  onClick={undoReset}
+                  className="ms-1 py-2 font-medium text-brand-900 underline underline-offset-8 transition-colors hover:text-brand-500"
+                >
+                  {messages.undo}
+                </button>
+              </>
+            )}
+          </p>
+        </div>
       </section>
     </div>
   );

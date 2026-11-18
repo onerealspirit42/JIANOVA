@@ -19,14 +19,33 @@ import {
 } from "@react-three/drei";
 import { ShoeModel } from "./ShoeModel";
 import { StageMessage } from "./StageMessage";
+import {
+  PauseIcon,
+  PlayIcon,
+  TurnLeftIcon,
+  TurnRightIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+} from "./icons";
 import type { Design, PartId } from "./parts";
+
+export type ViewMessages = {
+  group: string;
+  turnLeft: string;
+  turnRight: string;
+  zoomIn: string;
+  zoomOut: string;
+  pause: string;
+  play: string;
+};
 
 export type StageMessages = {
   loading: string;
   unavailable: string;
+  view: ViewMessages;
 };
 
-type ShoeStageProps = {
+export type ShoeStageProps = {
   design: Design;
   messages: StageMessages;
   /** Allow rotate and zoom with mouse, touch and keyboard. */
@@ -70,6 +89,87 @@ function FitCamera() {
 
   return null;
 }
+
+/** Commands the buttons send to the 3D view. */
+type ViewCommands = {
+  turn: (radians: number) => void;
+  zoom: (factor: number) => void;
+};
+
+/** The parts of OrbitControls the view driver uses. */
+type Controls = { target: THREE.Vector3; update: () => void };
+
+const UP = new THREE.Vector3(0, 1, 0);
+const MIN_DISTANCE = 3;
+const MAX_DISTANCE = 14;
+
+/**
+ * Turns and zooms the camera for the on-screen buttons, so the view can be
+ * changed without dragging (keyboard, switch access, one finger). Moves ease
+ * out from the current position and can be interrupted by a drag or another
+ * press; with reduced motion they apply at once.
+ */
+function ViewDriver({
+  commandsRef,
+  reducedMotion,
+}: {
+  commandsRef: { current: ViewCommands | null };
+  reducedMotion: boolean;
+}) {
+  const camera = useThree((s) => s.camera);
+  const controls = useThree((s) => s.controls) as unknown as Controls | null;
+  const invalidate = useThree((s) => s.invalidate);
+  const pending = useRef({ angle: 0, logZoom: 0 });
+
+  useEffect(() => {
+    commandsRef.current = {
+      turn: (radians) => {
+        pending.current.angle += radians;
+        invalidate();
+      },
+      zoom: (factor) => {
+        pending.current.logZoom += Math.log(factor);
+        invalidate();
+      },
+    };
+    return () => {
+      commandsRef.current = null;
+    };
+  }, [commandsRef, invalidate]);
+
+  useFrame((_, delta) => {
+    const p = pending.current;
+    if (Math.abs(p.angle) < 1e-4 && Math.abs(p.logZoom) < 1e-4) {
+      p.angle = 0;
+      p.logZoom = 0;
+      return;
+    }
+    const k = reducedMotion ? 1 : 1 - Math.exp(-delta * 9);
+    const angle = p.angle * k;
+    const logZoom = p.logZoom * k;
+    p.angle -= angle;
+    p.logZoom -= logZoom;
+
+    const target = controls?.target ?? TARGET;
+    const offset = camera.position.clone().sub(target).applyAxisAngle(UP, angle);
+    offset.setLength(
+      THREE.MathUtils.clamp(
+        offset.length() * Math.exp(logZoom),
+        MIN_DISTANCE,
+        MAX_DISTANCE,
+      ),
+    );
+    camera.position.copy(target).add(offset);
+    camera.lookAt(target);
+    controls?.update();
+    invalidate();
+  });
+
+  return null;
+}
+
+const stageButton =
+  "grid size-11 place-items-center rounded-full border border-white/15 bg-white/10 text-white backdrop-blur-md transition-[background-color,scale] duration-150 ease-out hover:bg-white/20 active:scale-[0.96]";
 
 /** Slowly turns its children around the vertical axis, like a turntable. */
 function Turntable({
@@ -146,28 +246,113 @@ export function ShoeStage({
 }: ShoeStageProps) {
   const reducedMotion = usePrefersReducedMotion();
   const [ref, inView] = useInView<HTMLDivElement>();
+  // The 3D view is "ready" once WebGL starts; buttons appear only then, so
+  // they never sit on top of the "could not be shown" message.
+  const [ready, setReady] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const commandsRef = useRef<ViewCommands | null>(null);
   // Render continuously only while turning on screen; otherwise render on
   // demand (after a change or interaction), which saves battery.
-  const turning = autoRotate && !reducedMotion;
+  const canTurn = autoRotate && !reducedMotion;
+  const turning = canTurn && !paused;
   const frameloop = turning && inView ? "always" : "demand";
   const unavailable = <StageMessage>{messages.unavailable}</StageMessage>;
+  const view = messages.view;
 
   return (
-    <div ref={ref} role="img" aria-label={label} className={className}>
+    <div ref={ref} className={className}>
       <StageErrorBoundary fallback={unavailable}>
-        <Canvas
-          frameloop={frameloop}
-          dpr={[1, 2]}
-          shadows={false}
-          camera={{ position: [3, 1.5, 3.5], fov: 28, near: 0.1, far: 60 }}
-          gl={{
-            antialias: true,
-            alpha: true,
-            powerPreference: "high-performance",
-          }}
-          fallback={unavailable}
-        >
+        <div role="img" aria-label={label} className="absolute inset-0">
+          <Canvas
+            frameloop={frameloop}
+            dpr={[1, 2]}
+            shadows={false}
+            camera={{ position: [3, 1.5, 3.5], fov: 28, near: 0.1, far: 60 }}
+            gl={{
+              antialias: true,
+              alpha: true,
+              powerPreference: "high-performance",
+            }}
+            fallback={unavailable}
+            onCreated={() => setReady(true)}
+          >
+            <Scene
+              design={design}
+              interactive={interactive}
+              turning={turning}
+              highlightPart={highlightPart}
+              highlightTick={highlightTick}
+              onSelectPart={onSelectPart}
+              reducedMotion={reducedMotion}
+              commandsRef={commandsRef}
+            />
+          </Canvas>
+        </div>
+
+        {ready && interactive && (
+          <div
+            role="group"
+            aria-label={view.group}
+            className="absolute end-4 top-4 flex gap-2"
+          >
+            <button type="button" aria-label={view.turnLeft} className={stageButton} onClick={() => commandsRef.current?.turn(-Math.PI / 6)}>
+              <TurnLeftIcon />
+            </button>
+            <button type="button" aria-label={view.turnRight} className={stageButton} onClick={() => commandsRef.current?.turn(Math.PI / 6)}>
+              <TurnRightIcon />
+            </button>
+            <button type="button" aria-label={view.zoomIn} className={stageButton} onClick={() => commandsRef.current?.zoom(0.8)}>
+              <ZoomInIcon />
+            </button>
+            <button type="button" aria-label={view.zoomOut} className={stageButton} onClick={() => commandsRef.current?.zoom(1.25)}>
+              <ZoomOutIcon />
+            </button>
+          </div>
+        )}
+
+        {ready && canTurn && (
+          <button
+            type="button"
+            aria-label={paused ? view.play : view.pause}
+            className={`${stageButton} absolute end-0 bottom-0 sm:end-4 sm:bottom-4`}
+            onClick={() => setPaused((p) => !p)}
+          >
+            <span className="grid [&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:transition-[opacity,scale,filter] [&>svg]:duration-300 [&>svg]:ease-[cubic-bezier(0.2,0,0,1)]">
+              <PauseIcon className={paused ? "scale-25 opacity-0 blur-[4px]" : "opacity-100"} />
+              <PlayIcon className={paused ? "opacity-100" : "scale-25 opacity-0 blur-[4px]"} />
+            </span>
+          </button>
+        )}
+      </StageErrorBoundary>
+    </div>
+  );
+}
+
+function Scene({
+  design,
+  interactive,
+  turning,
+  highlightPart,
+  highlightTick,
+  onSelectPart,
+  reducedMotion,
+  commandsRef,
+}: {
+  design: Design;
+  interactive: boolean;
+  turning: boolean;
+  highlightPart?: PartId;
+  highlightTick?: number;
+  onSelectPart?: (part: PartId) => void;
+  reducedMotion: boolean;
+  commandsRef: { current: ViewCommands | null };
+}) {
+  return (
+    <>
           <FitCamera />
+          {interactive && (
+            <ViewDriver commandsRef={commandsRef} reducedMotion={reducedMotion} />
+          )}
           <Suspense fallback={null}>
             <group position={[0, -0.55, 0]}>
               <Turntable active={turning}>
@@ -234,13 +419,11 @@ export function ShoeStage({
             enableZoom={interactive}
             enableDamping
             dampingFactor={0.08}
-            minDistance={3}
-            maxDistance={14}
+            minDistance={MIN_DISTANCE}
+            maxDistance={MAX_DISTANCE}
             minPolarAngle={0.25}
             maxPolarAngle={Math.PI / 2 - 0.05}
           />
-        </Canvas>
-      </StageErrorBoundary>
-    </div>
+    </>
   );
 }

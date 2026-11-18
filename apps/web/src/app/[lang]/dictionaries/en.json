@@ -26,7 +26,7 @@
   "status": {
     "heading": "Where we are",
     "text": "JIANOVA is in development. We are designing our first running shoe, and building the 3D configurator you can already try with a placeholder model.",
-    "link": "Try the configurator"
+    "link": "Design your pair"
   },
   "configurator": {
     "title": "Design your pair",
@@ -35,10 +35,21 @@
     "partsLegend": "Part",
     "colorsLegend": "Color for {part}",
     "reset": "Reset to original colors",
-    "hint": "Drag to turn the shoe, scroll or pinch to zoom, and click a part to select it.",
+    "resetDone": "Original colors restored.",
+    "undo": "Undo",
+    "hint": "Drag to turn the shoe, scroll or pinch to zoom, or select a part on the shoe.",
     "stageLabel": "3D view of the running shoe with your chosen colors",
     "loading": "Loading the 3D model",
     "unavailable": "The 3D view could not be shown on this device. You can still choose colors below.",
+    "view": {
+      "group": "View",
+      "turnLeft": "Turn left",
+      "turnRight": "Turn right",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "pause": "Pause rotation",
+      "play": "Resume rotation"
+    },
     "parts": {
       "upper": "Upper",
       "tongue": "Tongue",

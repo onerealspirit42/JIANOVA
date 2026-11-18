@@ -9,14 +9,22 @@ type SiteHeaderProps = {
   labels: { nav: string; customize: string; switchLanguage: string; home: string };
   /** Light text for use over the dark stage. */
   inverted?: boolean;
+  /** Positioning classes; defaults to a normal in-flow header. */
+  className?: string;
 };
 
-export function SiteHeader({ lang, path = "", labels, inverted = false }: SiteHeaderProps) {
+export function SiteHeader({
+  lang,
+  path = "",
+  labels,
+  inverted = false,
+  className = "relative",
+}: SiteHeaderProps) {
   const otherLang = lang === "ar" ? "en" : "ar";
   const tone = inverted ? "text-white" : "text-brand-900";
 
   return (
-    <header className={`relative z-10 ${tone}`}>
+    <header className={`z-10 ${className} ${tone}`}>
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 sm:px-10">
         <Link href={`/${lang}`} aria-label={labels.home} className="rounded-sm">
           <Wordmark decorative className="h-5 w-auto sm:h-6" />
