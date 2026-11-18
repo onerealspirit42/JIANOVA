@@ -49,6 +49,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Arabic pages: IBM Plex Sans Arabic first (it only covers Arabic glyphs,
+   so any Latin text falls through to Inter). */
+html[lang="ar"] body {
+  font-family: "IBM Plex Sans Arabic", var(--font-sans);
+}
+
 /* Visible keyboard focus for every interactive element */
 :focus-visible {
   outline: 2px solid var(--color-brand-500);

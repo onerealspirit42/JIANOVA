@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "title": "JIANOVA",
+    "description": "A Saudi footwear technology project creating premium running shoes and an innovative digital shopping experience. In development."
+  },
+  "common": {
+    "skipToContent": "Skip to content",
+    "switchLanguage": "العربية",
+    "rights": "All rights reserved."
+  },
+  "hero": {
+    "status": "In development",
+    "title": "Redefining the running experience.",
+    "intro": "JIANOVA is a Saudi footwear technology project focused on creating premium running shoes and an innovative digital shopping experience."
+  },
+  "vision": {
+    "heading": "Vision",
+    "text": "To combine premium footwear design, modern technology, and personalization into one seamless experience."
+  },
+  "building": {
+    "heading": "What we are building",
+    "note": "Everything below is in development and not yet available.",
+    "items": [
+      {
+        "title": "Interactive 3D customization",
+        "text": "Explore the shoe from every angle and personalize its colors and components in real time."
+      },
+      {
+        "title": "Premium running footwear",
+        "text": "From Saudi Arabia, with an elegant design and close attention to detail."
+      },
+      {
+        "title": "A considered digital experience",
+        "text": "Fast, smooth, and easy to use on mobile and desktop."
+      }
+    ]
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to home"
+  }
+}
