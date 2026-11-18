@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import "@fontsource-variable/inter";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "JIANOVA",
   description: "JIANOVA is under development.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#241039",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
