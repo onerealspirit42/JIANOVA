@@ -169,7 +169,7 @@ function ViewDriver({
 }
 
 const stageButton =
-  "grid size-11 place-items-center rounded-full border border-white/15 bg-white/10 text-white backdrop-blur-md transition-[background-color,scale] duration-150 ease-out hover:bg-white/20 active:scale-[0.96]";
+  "[display:grid] size-11 place-items-center rounded-full border border-white/15 bg-white/10 text-white backdrop-blur-md transition-[background-color,scale] duration-150 ease-out hover:bg-white/20 active:scale-[0.96]";
 
 /** Slowly turns its children around the vertical axis, like a turntable. */
 function Turntable({
@@ -317,7 +317,7 @@ export function ShoeStage({
             className={`${stageButton} absolute end-0 bottom-0 sm:end-4 sm:bottom-4`}
             onClick={() => setPaused((p) => !p)}
           >
-            <span className="grid [&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:transition-[opacity,scale,filter] [&>svg]:duration-300 [&>svg]:ease-[cubic-bezier(0.2,0,0,1)]">
+            <span className="[display:grid] [&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:transition-[opacity,scale,filter] [&>svg]:duration-300 [&>svg]:ease-[cubic-bezier(0.2,0,0,1)]">
               <PauseIcon className={paused ? "scale-25 opacity-0 blur-[4px]" : "opacity-100"} />
               <PlayIcon className={paused ? "opacity-100" : "scale-25 opacity-0 blur-[4px]"} />
             </span>

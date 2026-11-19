@@ -45,9 +45,9 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
   const selectedColor = design[selectedPart];
 
   return (
-    <div className="grid flex-1 lg:grid-cols-[minmax(0,1fr)_380px]">
+    <div className="[display:grid] flex-1 lg:grid-cols-[minmax(0,1fr)_380px]">
       {/* Stage */}
-      <div className="stage relative h-[56svh] min-h-[340px] lg:h-auto lg:min-h-[calc(100svh-5rem)]">
+      <div className="designer-stage relative h-[56svh] min-h-[340px] lg:h-auto lg:min-h-[calc(100svh-5rem)]">
         <LazyShoeStage
           design={design}
           interactive
@@ -72,7 +72,7 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
         aria-labelledby="configurator-title"
         className="border-line bg-surface px-6 py-8 sm:px-10 lg:border-s lg:px-8 lg:py-10"
       >
-        <h1 id="configurator-title" className="text-3xl font-light text-brand-900">
+        <h1 id="configurator-title" className="text-brand-900">
           {messages.title}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-pretty text-ink-500">{messages.intro}</p>
@@ -86,7 +86,7 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
           <legend className="text-sm font-medium text-brand-900">
             {messages.partsLegend}
           </legend>
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-3 [display:grid] grid-cols-2 gap-2">
             {PART_IDS.map((part) => (
               <label
                 key={part}
@@ -120,7 +120,7 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
               <label
                 key={color}
                 title={messages.colors[color]}
-                className="relative grid size-11 cursor-pointer place-items-center rounded-full has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-500"
+                className="relative [display:grid] size-11 cursor-pointer place-items-center rounded-full has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-500"
               >
                 <input
                   type="radio"

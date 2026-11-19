@@ -12,7 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Third-party kit files copied from the taste skill (not our code).
+    "public/assets/**",
   ]),
+  {
+    // Pictures are pre-sized WebP stills with srcset (scripts/stills), styled
+    // by the kit's CSS, which targets plain <img> elements.
+    rules: { "@next/next/no-img-element": "off" },
+  },
 ]);
 
 export default eslintConfig;

@@ -1,37 +1,234 @@
 {
   "meta": {
-    "title": "JIANOVA",
-    "description": "A Saudi footwear technology project creating premium running shoes and an innovative digital shopping experience. In development.",
-    "customizeTitle": "Design your pair | JIANOVA"
+    "title": "JIANOVA: Saudi-designed running shoes",
+    "description": "Design your JIANOVA running shoe in 3D: pick a color for each part, from the laces to the outsole.",
+    "customizeTitle": "Design your pair: the JIANOVA 3D designer",
+    "customizeDescription": "Choose a color for each of the seven parts of the JIANOVA running shoe and turn it in 3D.",
+    "brandTitle": "JIANOVA logo and colors",
+    "brandDescription": "The JIANOVA star logo and its files, the brand colors and type, and how to use them.",
+    "shareAlt": "The JIANOVA running shoe in deep purple on a light ground"
   },
   "common": {
     "skipToContent": "Skip to content",
     "switchLanguage": "العربية",
-    "rights": "All rights reserved.",
     "navLabel": "Main",
-    "customize": "Customize",
-    "home": "JIANOVA home"
+    "menu": "Menu",
+    "home": "JIANOVA home",
+    "mainAction": "Design your pair",
+    "nav": {
+      "parts": "Parts",
+      "steps": "Steps",
+      "colors": "Colors",
+      "brand": "Brand"
+    },
+    "quickActions": "Quick actions"
   },
-  "hero": {
-    "title": "Redefining the running experience.",
-    "intro": "JIANOVA is a Saudi footwear technology project creating premium running shoes, and a better way to make them yours.",
-    "cta": "Design your pair",
-    "stageLabel": "A 3D running shoe turning slowly",
-    "placeholderNote": "Shown: a simplified placeholder model. The final JIANOVA shoe is still in design."
+  "footer": {
+    "closeTitle": "Make a JIANOVA shoe in your colors",
+    "closeLine": "The designer runs in your browser, on a phone or a computer.",
+    "lede": "Saudi-designed running shoes",
+    "groups": {
+      "shoe": "Shoe",
+      "designer": "Designer",
+      "brand": "Brand",
+      "help": "Help"
+    },
+    "links": {
+      "parts": "Parts",
+      "steps": "Steps",
+      "colors": "Colors",
+      "questions": "Questions",
+      "logo": "Logo and colors"
+    },
+    "legal": "© 2026 JIANOVA"
   },
-  "vision": {
-    "heading": "Vision",
-    "text": "To combine premium footwear design, modern technology, and personalization into one seamless experience."
+  "home": {
+    "hero": {
+      "title": "Saudi-designed running shoes",
+      "lead": "Pick a color for each part of the JIANOVA shoe, from the laces to the outsole, and turn it in 3D as you go.",
+      "secondary": "See the colors",
+      "alt": "The JIANOVA running shoe from the side, deep purple with a white midsole and a dark outsole"
+    },
+    "parts": {
+      "title": "Seven parts of the shoe to color",
+      "lead": "The upper, tongue, laces, collar, heel, midsole and outsole each take their own color, so the details can match or stand apart.",
+      "items": [
+        {
+          "id": "upper",
+          "title": "Upper and tongue",
+          "text": "The two largest surfaces. Color them alike, or set the tongue apart.",
+          "alt": "The front of the shoe with a near-black upper and white laces"
+        },
+        {
+          "id": "laces",
+          "title": "Laces",
+          "text": "Dark laces on a light tongue, or one color from the toe to the collar.",
+          "alt": "Laces and tongue from above: dark laces on a white tongue"
+        },
+        {
+          "id": "heel",
+          "title": "Collar and heel",
+          "text": "The padded ring round the ankle and the firm counter that holds your heel.",
+          "alt": "The back of the shoe showing the purple heel and collar"
+        },
+        {
+          "id": "sole",
+          "title": "Midsole and outsole",
+          "text": "The foam layer and the rubber under it, each in a color of its own.",
+          "alt": "The sole from the side: a white midsole over an orange outsole"
+        }
+      ]
+    },
+    "steps": {
+      "title": "Design your shoe in three steps",
+      "items": [
+        {
+          "title": "Choose a part of the shoe",
+          "text": "Select it in the list or tap it on the shoe. The part glows for a moment, so you can see which one you are changing.",
+          "alt": "The shoe with its laces lit up, the part being changed"
+        },
+        {
+          "title": "Color the shoe part you chose",
+          "text": "The shoe changes as soon as you choose, with a short fade from the old color to the new one.",
+          "alt": "The shoe with orange laces, collar and heel"
+        },
+        {
+          "title": "Turn the shoe and look closer",
+          "text": "Drag to turn the shoe, or use the buttons and the keyboard. Zoom in to see where two colors meet.",
+          "alt": "The same shoe from behind, showing the orange heel"
+        }
+      ]
+    },
+    "idea": {
+      "title": "Our first running shoe",
+      "before": "We are designing our first running shoe, and the tools that let every runner make a pair ",
+      "strong": "their own",
+      "after": ", starting with the designer on this site."
+    },
+    "colors": {
+      "title": "Eight colors for every part of the shoe",
+      "lead": "Choose a color to see it on the upper. In the designer, any part can take any of the eight.",
+      "legend": "Color of the upper",
+      "alt": "The JIANOVA shoe with a {color} upper"
+    },
+    "questions": {
+      "title": "Questions about JIANOVA",
+      "lead": "Short answers about the shoe, the designer and the store.",
+      "items": [
+        {
+          "q": "Can I buy a JIANOVA shoe now?",
+          "a": "Not yet. The shoe is still in design and the store is not open. You can already design your pair here."
+        },
+        {
+          "q": "Is the shoe on this site the final design?",
+          "a": "No. It is a simplified model, there so you can try the designer. The final shoe will replace it once its design is done."
+        },
+        {
+          "q": "Can I save my shoe design?",
+          "a": "Not yet. The designer keeps your colors only while the page is open."
+        },
+        {
+          "q": "Does the shoe designer work on a phone?",
+          "a": "Yes. Turn the shoe with one finger, pinch to zoom, and use the buttons to turn it a step at a time."
+        },
+        {
+          "q": "Can I design the shoe in Arabic?",
+          "a": "Yes. Every page, the designer included, is in English and Arabic. Switch with the link at the top of the page."
+        }
+      ],
+      "phoneAlt": "The JIANOVA designer on a phone, showing the shoe and the color controls"
+    }
   },
-  "status": {
-    "heading": "Where we are",
-    "text": "JIANOVA is in development. We are designing our first running shoe, and building the 3D configurator you can already try with a placeholder model.",
-    "link": "Design your pair"
+  "brand": {
+    "hero": {
+      "title": "The JIANOVA logo and colors",
+      "lead": "The star is drawn from the A in the wordmark, the one without a crossbar: four of them, one for each point. Download the files and use them as this page shows.",
+      "primary": "Download the logo",
+      "secondary": "See the colors",
+      "alt": "The JIANOVA logo: a four-pointed star beside the wordmark"
+    },
+    "star": {
+      "title": "Four A's make the star",
+      "text": "Each point has the angle of the wordmark's A, 38.6 degrees at the tip. The points above and below are longer, so the star still reads as a star at 16 pixels.",
+      "diagramLabel": "Diagram: the letter A of the wordmark, its 38.6 degree tip, and four copies of it turned to form the star",
+      "theA": "The A",
+      "four": "Four A's",
+      "star": "The star"
+    },
+    "files": {
+      "title": "Logo files",
+      "lead": "SVG files scale to any size. Use the white versions on purple or on photographs.",
+      "download": "Download SVG",
+      "downloadWhite": "White SVG",
+      "downloadPng": "PNG, 512 px",
+      "items": {
+        "logo": "Logo",
+        "stacked": "Stacked logo",
+        "star": "Star",
+        "icon": "App icon"
+      }
+    },
+    "colors": {
+      "title": "Brand colors and type",
+      "lead": "Royal purple leads. The rest of the page stays neutral, so the purple and the shoe stand out.",
+      "rows": [
+        {
+          "name": "Royal purple",
+          "hex": "#241039",
+          "use": "The logo, buttons and the brand band"
+        },
+        {
+          "name": "Ink",
+          "hex": "#1C1029",
+          "use": "Text"
+        },
+        {
+          "name": "Paper",
+          "hex": "#FAF9FB",
+          "use": "The page ground"
+        },
+        {
+          "name": "Mist",
+          "hex": "#F2EFF6",
+          "use": "Panels and quiet bands"
+        },
+        {
+          "name": "Muted",
+          "hex": "#6F677A",
+          "use": "Labels and secondary text"
+        }
+      ],
+      "typeTitle": "Type",
+      "typeText": "Instrument Serif for headings and Instrument Sans for text. In Arabic, Noto Naskh Arabic and IBM Plex Sans Arabic.",
+      "shoeColors": "Shoe colors"
+    },
+    "use": {
+      "title": "Using the logo",
+      "lead": "A few rules keep the logo clear at every size.",
+      "rows": [
+        {
+          "name": "Clear space",
+          "text": "Keep empty space at least as wide as the star on every side of the logo."
+        },
+        {
+          "name": "Smallest size",
+          "text": "The star 16 px tall on its own; the full logo 120 px wide."
+        },
+        {
+          "name": "Colors",
+          "text": "Royal purple on light grounds, white on purple or on photographs. No other colors."
+        },
+        {
+          "name": "Keep it as drawn",
+          "text": "Never add a crossbar to the A, outline or turn the star, or change the space between the star and the name."
+        }
+      ]
+    }
   },
   "configurator": {
     "title": "Design your pair",
     "intro": "Choose a part, then a color. Changes appear on the shoe right away.",
-    "placeholderNote": "This is a simplified placeholder model for trying the configurator. The final JIANOVA shoe is still in design.",
+    "placeholderNote": "The shoe here is a simplified model for trying the designer. The final JIANOVA shoe is still in design.",
     "partsLegend": "Part",
     "colorsLegend": "Color for {part}",
     "reset": "Reset to original colors",

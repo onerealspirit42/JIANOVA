@@ -1,0 +1,112 @@
+/*
+ * JIANOVA tokens for the taste-skill kit. Load after layout.css.
+ *
+ * The palette is the client's own (start.mjs brand --page product --bg #faf9fb
+ * --ink #1c1029 --accent #241039 --surface #f2eff6 --type instrument-serif
+ * --radius soft), kept as printed. Royal purple #241039 is the brand colour
+ * from the JIANOVA brief, so it stays even though the kit avoids violet.
+ * Font names point at the self-hosted faces, with the Arabic partners.
+ */
+:root {
+  --p-bg: #faf9fb; --p-surface: #f2eff6; --p-ink: #1c1029; --p-muted: #6f677a;
+  --p-accent: #241039; --p-accent-ink: #faf9fb; --p-action: #241039; --p-action-ink: #faf9fb;
+  --p-inv-bg: #1c1029; --p-inv-surface: #291d36; --p-inv-ink: #faf9fb; --p-inv-muted: #9d97a5;
+  --p-inv-accent: #faf9fb; --p-inv-accent-ink: #1c1029; --p-inv-action: #faf9fb; --p-inv-action-ink: #1c1029;
+  --font-display: "Instrument Serif", "Noto Naskh Arabic", Georgia, serif;
+  --font-text: "Instrument Sans", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --display-weight: 400;
+  --display-tracking: -0.012em;
+  --display-tracking-xl: -0.016em;
+  --ly-scale: 1.12;
+}
+
+/* Arabic is a joined script: no negative tracking, and taller lines for Naskh. */
+html[lang="ar"] {
+  --display-tracking: 0;
+  --display-tracking-xl: 0;
+}
+html[lang="ar"] :is(h1, h2, h3, .t-h1, .t-h2, .t-h3, .footer__lede, .mo-wh__text) {
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+html[lang="ar"] body { line-height: 1.75; }
+
+/* The logo in the bar and the footer: the lockup's own height. */
+.nav__logo svg { height: 26px; width: auto; }
+@media (max-width: 639px) { .nav__logo svg { height: 22px; } }
+.footer .nav__logo svg { height: 30px; }
+
+/* A heading block in a split column keeps to the top of its column. */
+.grid > .section-head { align-self: start; align-content: start; }
+
+/* ---------------------------------------------------------------- home */
+
+/* Parts: the pair of close-ups, 4:3, on the soft panel ground. */
+.part-frame { aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--r-lg); background: var(--p-surface); }
+.part-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Questions: the designer on a phone, under the heading. */
+.phone-shot { width: min(240px, 60%); height: auto; margin-top: var(--s-7); border-radius: 28px; box-shadow: 0 0 0 1px color-mix(in oklab, var(--p-ink) 14%, transparent), 0 24px 48px -24px color-mix(in oklab, var(--p-ink) 30%, transparent); }
+@media (max-width: 1023px) { .phone-shot { width: 160px; margin-top: var(--s-6); } }
+
+/* Colours: eight named colours (radio chips) beside the shoe on the brand band. */
+.swatches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); margin: 0; padding: 0; border: 0; min-inline-size: 0; }
+.swatches legend { grid-column: 1 / -1; float: left; width: 100%; font: 500 13px/1.3 var(--font-text); margin: 0 0 var(--s-3); padding: 0; color: var(--ink); }
+.swatch { position: relative; display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding-inline: var(--s-3); border: 1px solid color-mix(in oklab, var(--ink) 28%, transparent); border-radius: var(--r-sm); font-size: 16px; color: var(--ink); cursor: pointer; transition: border-color 150ms ease, background-color 150ms ease; }
+.swatch:hover { border-color: color-mix(in oklab, var(--ink) 60%, transparent); }
+.swatch input { position: absolute; inset: -1px; margin: 0; appearance: none; -webkit-appearance: none; background: transparent; border: 0; border-radius: inherit; cursor: pointer; }
+.swatch input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.swatch__dot { width: 20px; height: 20px; flex: none; border-radius: 999px; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--p-ink) 25%, transparent), 0 0 0 1px color-mix(in oklab, var(--p-bg) 40%, transparent); }
+.swatch:has(input:checked) { border-color: var(--ink); background: color-mix(in oklab, var(--ink) 10%, transparent); }
+.color-frame { background: var(--p-bg); border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 4 / 3; }
+.color-frame img { width: 100%; height: 100%; object-fit: contain; }
+
+/* --------------------------------------------------------------- brand */
+.logo-frame { display: grid; place-items: center; border-radius: var(--r-lg); background: var(--p-surface); color: var(--p-accent); }
+.logo-frame--dark { background: var(--p-accent); color: var(--p-accent-ink); }
+.logo-frame svg { width: 62%; height: auto; max-height: 64%; }
+.logo-frame--icon svg { width: auto; height: 40%; }
+.diagram-frame { display: grid; place-items: center; aspect-ratio: 5 / 4; padding: 6%; border-radius: var(--r-lg); background: var(--p-surface); color: var(--p-accent); }
+.diagram-frame .brand-diagram { width: 100%; height: auto; }
+#use .rows > li { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+#use .rows__value { text-align: start; white-space: normal; }
+.color-chip { display: inline-block; width: 20px; height: 20px; border-radius: 6px; vertical-align: -4px; margin-inline-end: var(--s-2); box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 40%, transparent); }
+
+/* ------------------------------------------------------------ designer */
+/* The configurator sits under the fixed bar. */
+.designer { padding-top: var(--nav); min-height: 100svh; display: flex; flex-direction: column; }
+
+/* Arabic: the steps' marker line sits on the reading side (the kit draws it on the left). */
+[dir="rtl"] [data-moment="pinned-chapters"].is-live .mo-pc__step { padding-left: 0; padding-right: var(--s-5); border-left: 0; border-right: 2px solid var(--line); transition: border-color 300ms ease; }
+[dir="rtl"] [data-moment="pinned-chapters"].is-live .mo-pc__step.is-on { border-right-color: var(--accent); }
+@media (max-width: 639px) {
+  [dir="rtl"] [data-moment="pinned-chapters"] .mo-pc__step { padding-left: 0; padding-right: var(--s-5); border-left: 0; border-right: 2px solid var(--line); }
+}
+
+/* Steps: the live scene top-aligned like every section (its h2 on the --padt line).
+   The moment's own CSS loads after this file, so these rules carry #steps. */
+main #steps[data-moment].is-live > .mo-pc__grid { align-content: start; padding-top: var(--padt); }
+
+/* Tablet (640 to 1023): each section holds its screen. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  #steps[data-moment]:not(.is-live) .mo-pc__visual > img { max-height: 19svh; }
+  .color-frame { aspect-ratio: 16 / 9; }
+  #questions .grid > .span-5, #questions.section > .wrap.grid > .span-5 { grid-column: 1 / span 5; }
+  #questions .grid > .span-6, #questions.section > .wrap.grid > .span-6 { grid-column: 6 / -1; }
+}
+
+/* 640 to 1023: the pair of close-ups stays side by side, upright; a phone stacks them wide. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  #parts .grid > .span-6 { grid-column: span 6; }
+  #parts .part-frame { aspect-ratio: 4 / 5; }
+}
+
+/* Phone: shorter pictures, and two screens where the content is taller than one. */
+@media (max-width: 639px) {
+  .color-frame { aspect-ratio: 16 / 9; }
+  #parts .part-frame { aspect-ratio: 16 / 9; }
+  .swatch { min-height: 44px; }
+  .swatches { gap: 6px; }
+  main > #steps[data-moment]:not(.is-live) { min-height: calc(2 * 100lvh); }
+  #questions, footer.closing { --hm: 2; }
+}

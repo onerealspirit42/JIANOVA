@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SkipLink } from "@/components/SkipLink";
+import { SiteNav } from "@/components/site/SiteNav";
 import { Configurator } from "@/features/configurator/Configurator";
 import { getDictionary, hasLocale } from "../dictionaries";
 
@@ -11,7 +10,11 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = await getDictionary(lang);
-  return { title: dict.meta.customizeTitle };
+  return {
+    title: dict.meta.customizeTitle,
+    description: dict.meta.customizeDescription,
+    openGraph: { title: dict.meta.customizeTitle, description: dict.meta.customizeDescription },
+  };
 }
 
 export default async function CustomizePage({
@@ -23,21 +26,13 @@ export default async function CustomizePage({
 
   return (
     <>
-      <SkipLink label={dict.common.skipToContent} />
-      <div className="bg-brand-950 text-white">
-        <SiteHeader
-          lang={lang}
-          path="/customize"
-          inverted
-          labels={{
-            nav: dict.common.navLabel,
-            customize: dict.common.customize,
-            switchLanguage: dict.common.switchLanguage,
-            home: dict.common.home,
-          }}
-        />
-      </div>
-      <main id="content" className="flex flex-1 flex-col">
+      <SiteNav
+        lang={lang}
+        dict={dict}
+        page="customize"
+        alternate={lang === "ar" ? "/en/customize" : "/ar/customize"}
+      />
+      <main id="top" className="designer">
         <Configurator messages={dict.configurator} />
       </main>
     </>

@@ -3,3 +3,10 @@ node_modules/
 .env*
 !.env.example
 *.log
+
+# taste-skill working state (deal history, gate rounds, Chrome profiles)
+.taste-skill/
+
+# The taste skill (40 MB with its photo library); reinstall it with
+#   npx skills add https://github.com/Leonxlnx/taste-skill --skill design-taste-frontend -a claude-code
+.claude/skills/design-taste-frontend/

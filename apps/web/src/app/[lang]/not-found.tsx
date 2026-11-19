@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { lang } from "next/root-params";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { SiteNav } from "@/components/site/SiteNav";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 export default async function NotFound() {
@@ -10,21 +9,22 @@ export default async function NotFound() {
   const dict = await getDictionary(locale);
 
   return (
-    <main
-      lang={locale}
-      dir={locale === "ar" ? "rtl" : "ltr"}
-      className="flex flex-1 flex-col items-center justify-center gap-8 px-6 text-center"
-    >
-      <Wordmark className="h-6 w-auto text-brand-900" />
-      <h1 className="text-2xl font-light text-brand-900 sm:text-3xl">
-        {dict.notFound.title}
-      </h1>
-      <Link
-        href={`/${locale}`}
-        className="rounded-sm px-1 py-2 text-sm text-brand-900 underline underline-offset-8 transition-colors hover:text-brand-500"
-      >
-        {dict.notFound.back}
-      </Link>
-    </main>
+    <>
+      <SiteNav lang={locale} dict={dict} page="other" alternate={locale === "ar" ? "/en" : "/ar"} />
+      <main id="top">
+        <section className="section" aria-labelledby="nf-h">
+          <div className="wrap">
+            <div className="section-head">
+              <h1 id="nf-h">{dict.notFound.title}</h1>
+              <p>
+                <a className="link" href={`/${locale}`}>
+                  {dict.notFound.back}
+                </a>
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }

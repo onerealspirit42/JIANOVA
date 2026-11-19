@@ -55,4 +55,6 @@ with any other name.
 2. In `apps/web/src/features/configurator/parts.ts`, set `MODEL_URL` to the new
    path and `IS_PLACEHOLDER_MODEL` to `false` (this removes the placeholder
    notices on the site).
-3. Run the browser tests and review the shoe from every angle.
+3. Run `pnpm --filter web build:stills` to re-render the home page's pictures
+   from the new model (the cameras are in `apps/web/scripts/stills/render-stills.mjs`).
+4. Run the browser tests and review the shoe from every angle.
