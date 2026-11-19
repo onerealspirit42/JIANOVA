@@ -1,12 +1,13 @@
 /**
  * The JIANOVA star: four points, each with the 38.6 degree tip of the
- * wordmark's A (the A has no crossbar), joined by smooth curves; the vertical
- * points are longer than the horizontal ones. From scripts/brand/build-logo.mjs,
- * on a 74 x 100 box.
+ * wordmark's A (the A has no crossbar), joined by smooth curves, and split
+ * into two halves with the right one a step higher: a pair, mid-stride.
+ * From scripts/brand/build-logo.mjs, on a 70 x 105 box.
  */
 export const STAR_PATH =
-  "M37.00,0.00 C49.12,34.62 55.78,43.62 74.00,50.00 C55.78,56.38 49.12,65.38 37.00,100.00 C24.88,65.38 18.22,56.38 0.00,50.00 C18.22,43.62 24.88,34.62 37.00,0.00 Z";
-export const STAR_WIDTH = 74;
+  "M33.20,99.88 C20.87,65.06 17.52,61.13 0.00,55.00 C17.52,48.87 20.87,44.94 33.20,10.12 Z M36.80,5.12 C49.13,39.94 52.48,43.87 70.00,50.00 C52.48,56.13 49.13,60.06 36.80,94.88 Z";
+export const STAR_WIDTH = 70;
+export const STAR_HEIGHT = 105;
 
 type StarMarkProps = {
   className?: string;
@@ -17,7 +18,7 @@ type StarMarkProps = {
 export function StarMark({ className, label }: StarMarkProps) {
   return (
     <svg
-      viewBox="0 0 74 100"
+      viewBox={`0 0 ${STAR_WIDTH} ${STAR_HEIGHT}`}
       className={className}
       {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true, focusable: false })}
     >

@@ -110,3 +110,33 @@ main #steps[data-moment].is-live > .mo-pc__grid { align-content: start; padding-
   main > #steps[data-moment]:not(.is-live) { min-height: calc(2 * 100lvh); }
   #questions, footer.closing { --hm: 2; }
 }
+
+/* ------------------------------------------------------- refinements */
+:root { color-scheme: light; }
+
+/* The header as a frosted layer: the page scrolls beneath it (Apple's
+   materials). Solid where transparency is unwelcome or unsupported, and
+   while the phone menu is open. Ink on the frosted paper stays above 11:1
+   even over the purple band. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav {
+    background: color-mix(in oklab, var(--p-bg) 82%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
+    border-bottom-color: color-mix(in oklab, var(--p-ink) 9%, transparent);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nav { background: var(--p-bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+.nav.is-open { background: var(--p-bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* Taps answer at once; controls that draw their own pressed state skip the grey flash. */
+a, button, label, input, summary { touch-action: manipulation; }
+.btn, .nav__link, .nav__toggle, .swatch, .tile, .link { -webkit-tap-highlight-color: transparent; }
+
+/* The statement on the quiet panel ground: one change of surface before the purple band. */
+#idea.ground-surface { background: var(--p-surface); }
+
+/* Phone: the designer screenshot a little larger, so the questions fill their two screens. */
+@media (max-width: 639px) { .phone-shot { width: 240px; } }

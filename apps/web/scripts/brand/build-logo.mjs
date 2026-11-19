@@ -7,7 +7,11 @@
  * same letter. Each side is one smooth curve from tip to tip: it leaves both
  * tips along the A's legs and bows toward the centre (CURVE = how far along
  * the legs its control points sit). The vertical points are longer
- * (1 : 0.74), like a guiding star.
+ * (1 : 0.70), like a guiding star.
+ *
+ * The star is split down the middle into two halves, the right one a step
+ * higher (STEP): a pair, one foot ahead of the other. GAP is the cut between
+ * them. Both are shares of the star's own height.
  *
  * Run: pnpm --filter web build:logo   (PNGs need Playwright with Chromium)
  */
@@ -26,8 +30,10 @@ const PAPER = "#faf9fb";
 const ALPHA = Math.atan(15.05 / 43);
 
 /** Corner points of the star (tips N, E, S, W) on a 2-unit tall box. */
-const RH = 0.74;
-const CURVE = 0.82;
+const RH = 0.7;
+const CURVE = 0.92;
+const GAP_SHARE = 0.036;
+const STEP_SHARE = 0.05;
 
 function starPoints(rv = 1, rh = RH) {
   const tips = [[0, -rv], [rh, 0], [0, rv], [-rh, 0]];
@@ -54,19 +60,62 @@ function starPoints(rv = 1, rh = RH) {
   return out;
 }
 
-/** The star as an SVG path, centred on (cx, cy), `h` tall. */
-function starPath(cx, cy, h) {
+/** The four sides as cubic curves [p0, c1, c2, p3], on the 2-unit box. */
+function starSides() {
   const pts = starPoints();
-  const at = ([x, y]) => `${(cx + (x * h) / 2).toFixed(2)},${(cy + (y * h) / 2).toFixed(2)}`;
   const toward = (p, q) => [p[0] + CURVE * (q[0] - p[0]), p[1] + CURVE * (q[1] - p[1])];
-  let d = `M${at(pts[0])}`;
-  for (let i = 0; i < 4; i++) {
+  return [0, 1, 2, 3].map((i) => {
     const tip = pts[2 * i];
     const inner = pts[2 * i + 1];
     const next = pts[(2 * i + 2) % 8];
-    d += ` C${at(toward(tip, inner))} ${at(toward(next, inner))} ${at(next)}`;
+    return [tip, toward(tip, inner), toward(next, inner), next];
+  });
+}
+
+const lerp2 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+/** Split a cubic at t (de Casteljau): returns [first part, second part]. */
+function splitCubic([p0, p1, p2, p3], t) {
+  const a = lerp2(p0, p1, t), b = lerp2(p1, p2, t), c = lerp2(p2, p3, t);
+  const d = lerp2(a, b, t), e = lerp2(b, c, t), f = lerp2(d, e, t);
+  return [[p0, a, d, f], [f, e, c, p3]];
+}
+const xAt = ([p0, p1, p2, p3], t) =>
+  (1 - t) ** 3 * p0[0] + 3 * (1 - t) ** 2 * t * p1[0] + 3 * (1 - t) * t ** 2 * p2[0] + t ** 3 * p3[0];
+/** The t where a side (monotonic in x) crosses x = c. */
+function tAtX(side, c) {
+  let lo = 0, hi = 1;
+  const rising = xAt(side, 1) > xAt(side, 0);
+  for (let k = 0; k < 60; k++) {
+    const mid = (lo + hi) / 2;
+    if (xAt(side, mid) < c === rising) lo = mid; else hi = mid;
   }
-  return `${d} Z`;
+  return (lo + hi) / 2;
+}
+
+/**
+ * The star as an SVG path of two closed shapes (the pair), centred on
+ * (cx, cy) and `h` tall in all (the step included).
+ */
+function starPath(cx, cy, h) {
+  const [ne, es, sw, wn] = starSides(); // N->E, E->S, S->W, W->N
+  const g = GAP_SHARE * 2; // on the 2-unit box
+  const step = STEP_SHARE * 2;
+  const scale = h / (2 + step);
+  const at = ([x, y], dy) => `${(cx + x * scale).toFixed(2)},${(cy + (y + dy) * scale).toFixed(2)}`;
+  const curve = (c, dy) => ` C${at(c[1], dy)} ${at(c[2], dy)} ${at(c[3], dy)}`;
+
+  // Left half: from the cut on S->W, round the west point, to the cut on W->N.
+  const leftDy = step / 2;
+  const a = splitCubic(sw, tAtX(sw, -g / 2))[1];
+  const b = splitCubic(wn, tAtX(wn, -g / 2))[0];
+  const left = `M${at(a[0], leftDy)}${curve(a, leftDy)}${curve(b, leftDy)} Z`;
+
+  // Right half, one step higher: from the cut on N->E, round the east point, to the cut on E->S.
+  const rightDy = -step / 2;
+  const c = splitCubic(ne, tAtX(ne, g / 2))[1];
+  const d = splitCubic(es, tAtX(es, g / 2))[0];
+  const right = `M${at(c[0], rightDy)}${curve(c, rightDy)}${curve(d, rightDy)} Z`;
+  return `${left} ${right}`;
 }
 const star = (cx, cy, h, fill) => `<path fill="${fill}" d="${starPath(cx, cy, h)}"/>`;
 
@@ -91,7 +140,7 @@ const svg = (w, h, body, bg) =>
 
 // Horizontal lockup: the star 1.2x the cap height, 14 units from the wordmark.
 const STAR_H = 48;
-const STAR_W = STAR_H * RH;
+const STAR_W = (STAR_H * RH) / (1 + STEP_SHARE);
 const GAP = 14;
 const H_W = STAR_W + GAP + WORDMARK_W;
 const horizontal = (color) =>
@@ -122,7 +171,8 @@ const files = {
 for (const [name, body] of Object.entries(files)) await writeFile(join(BRAND, name), body);
 await writeFile(join(WEB, "src/app/icon.svg"), appIcon(64, 14));
 console.log(`wrote ${Object.keys(files).length} files to public/brand and src/app/icon.svg`);
-console.log("star path (100 units tall):", starPath(RH * 50, 50, 100));
+console.log("star path (105 units tall):", starPath((RH * 100) / 2, 52.5, 105));
+console.log("star box:", (RH * 100).toFixed(2), "x 105");
 
 // PNG icons: rendered by Chromium from the SVG (Playwright, found locally or via NODE_PATH).
 let chromium;

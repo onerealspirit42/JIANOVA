@@ -29,7 +29,7 @@ export function SiteNav({ lang, dict, page, alternate }: SiteNavProps) {
         <a className="skip-link" href="#top">
           {dict.common.skipToContent}
         </a>
-        <a className="nav__logo" href={page === "home" ? "#top" : `/${lang}`} aria-label={dict.common.home}>
+        <a className="nav__logo" translate="no" href={page === "home" ? "#top" : `/${lang}`} aria-label={dict.common.home}>
           <Logo decorative />
         </a>
         <nav className="nav__links" aria-label={dict.common.navLabel}>

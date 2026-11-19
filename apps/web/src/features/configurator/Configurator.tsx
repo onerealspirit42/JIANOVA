@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { LazyShoeStage } from "./LazyShoeStage";
 import { useConfigurator } from "./store";
+import { DESIGN_PARAM, decodeDesign, encodeDesign, isDefaultDesign } from "./share";
 import type { ViewMessages } from "./ShoeStage";
 import {
   COLOR_IDS,
@@ -23,6 +25,9 @@ export type ConfiguratorMessages = {
   reset: string;
   resetDone: string;
   undo: string;
+  copyLink: string;
+  linkCopied: string;
+  linkFailed: string;
   hint: string;
   stageLabel: string;
   loading: string;
@@ -41,6 +46,40 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
   const reset = useConfigurator((s) => s.reset);
   const undoReset = useConfigurator((s) => s.undoReset);
   const canUndo = useConfigurator((s) => s.beforeReset !== null);
+  const loadDesign = useConfigurator((s) => s.loadDesign);
+  const [linkStatus, setLinkStatus] = useState<"" | "copied" | "failed">("");
+  const readUrl = useRef(false);
+
+  // Open a design from the address (?d=...) once, on arrival.
+  useEffect(() => {
+    const shared = decodeDesign(new URLSearchParams(window.location.search).get(DESIGN_PARAM));
+    if (shared) loadDesign(shared);
+    readUrl.current = true;
+  }, [loadDesign]);
+
+  // Keep the address in step with the design, so the link saves and shares it,
+  // and carry it into the language switch.
+  useEffect(() => {
+    if (!readUrl.current) return;
+    const url = new URL(window.location.href);
+    if (isDefaultDesign(design)) url.searchParams.delete(DESIGN_PARAM);
+    else url.searchParams.set(DESIGN_PARAM, encodeDesign(design));
+    window.history.replaceState(window.history.state, "", url);
+    document.querySelectorAll<HTMLAnchorElement>("a[hreflang]").forEach((link) => {
+      const target = new URL(link.href);
+      target.search = url.search;
+      link.href = target.toString();
+    });
+  }, [design]);
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setLinkStatus("copied");
+    } catch {
+      setLinkStatus("failed");
+    }
+  }
 
   const selectedColor = design[selectedPart];
 
@@ -127,9 +166,10 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
                   name="color"
                   value={color}
                   checked={selectedColor === color}
-                  onChange={(e) =>
-                    isColorId(e.target.value) && setColor(selectedPart, e.target.value)
-                  }
+                  onChange={(e) => {
+                    if (isColorId(e.target.value)) setColor(selectedPart, e.target.value);
+                    setLinkStatus("");
+                  }}
                   aria-label={messages.colors[color]}
                   className="peer sr-only"
                 />
@@ -158,8 +198,17 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
           >
             {messages.reset}
           </button>
+          <button
+            type="button"
+            onClick={copyLink}
+            className="py-2 text-sm text-brand-900 underline underline-offset-8 transition-colors hover:text-brand-500"
+          >
+            {messages.copyLink}
+          </button>
           {/* Stays mounted so screen readers announce the text when it appears. */}
           <p role="status" className="text-sm text-ink-500">
+            {linkStatus === "copied" && !canUndo && messages.linkCopied}
+            {linkStatus === "failed" && !canUndo && messages.linkFailed}
             {canUndo && (
               <>
                 {messages.resetDone}{" "}

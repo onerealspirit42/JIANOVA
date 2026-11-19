@@ -50,7 +50,7 @@
       "alt": "The JIANOVA running shoe from the side, deep purple with a white midsole and a dark outsole"
     },
     "parts": {
-      "title": "Seven parts of the shoe to color",
+      "title": "7 parts of the shoe to color",
       "lead": "The upper, tongue, laces, collar, heel, midsole and outsole each take their own color, so the details can match or stand apart.",
       "items": [
         {
@@ -80,7 +80,7 @@
       ]
     },
     "steps": {
-      "title": "Design your shoe in three steps",
+      "title": "Design your shoe in 3 steps",
       "items": [
         {
           "title": "Choose a part of the shoe",
@@ -106,7 +106,7 @@
       "after": ", starting with the designer on this site."
     },
     "colors": {
-      "title": "Eight colors for every part of the shoe",
+      "title": "8 colors for every part of the shoe",
       "lead": "Choose a color to see it on the upper. In the designer, any part can take any of the eight.",
       "legend": "Color of the upper",
       "alt": "The JIANOVA shoe with a {color} upper"
@@ -125,7 +125,7 @@
         },
         {
           "q": "Can I save my shoe design?",
-          "a": "Not yet. The designer keeps your colors only while the page is open."
+          "a": "Yes. The page address keeps your colors as you choose them. Copy the link to come back to your design or to send it to someone."
         },
         {
           "q": "Does the shoe designer work on a phone?",
@@ -142,18 +142,18 @@
   "brand": {
     "hero": {
       "title": "The JIANOVA logo and colors",
-      "lead": "The star is drawn from the A in the wordmark, the one without a crossbar: four of them, one for each point. Download the files and use them as this page shows.",
+      "lead": "The star is drawn from the A in the wordmark, the one without a crossbar, and split into a pair. Download the files and use them as this page shows.",
       "primary": "Download the logo",
       "secondary": "See the colors",
-      "alt": "The JIANOVA logo: a four-pointed star beside the wordmark"
+      "alt": "The JIANOVA logo: a four-pointed star in two halves beside the wordmark"
     },
     "star": {
-      "title": "Four A's make the star",
-      "text": "Each point has the angle of the wordmark's A, 38.6 degrees at the tip, and each side curves smoothly in to the next point. The points above and below are longer, so the star still reads as a star at 16 pixels.",
-      "diagramLabel": "Diagram: the letter A of the wordmark, its 38.6 degree tip, and four copies of it turned to form the star",
+      "title": "Four A’s and a pair",
+      "text": "Each point has the angle of the wordmark’s A, 38.6 degrees at the tip, and each side curves smoothly in to the next point. The star is split into two halves, the right one a step ahead: a pair, mid-stride.",
+      "diagramLabel": "Diagram: the letter A of the wordmark with its 38.6 degree tip, four copies of it forming a star, and the star split into two halves, one a step higher",
       "theA": "The A",
-      "four": "Four A's",
-      "star": "The star"
+      "four": "Four A’s",
+      "star": "A pair"
     },
     "files": {
       "title": "Logo files",
@@ -236,7 +236,7 @@
     "undo": "Undo",
     "hint": "Drag to turn the shoe, scroll or pinch to zoom, or select a part on the shoe.",
     "stageLabel": "3D view of the running shoe with your chosen colors",
-    "loading": "Loading the 3D model",
+    "loading": "Loading the 3D model…",
     "unavailable": "The 3D view could not be shown on this device. You can still choose colors below.",
     "view": {
       "group": "View",
@@ -265,7 +265,10 @@
       "oasis": "Oasis green",
       "ember": "Ember",
       "midnight": "Midnight"
-    }
+    },
+    "copyLink": "Copy link to this design",
+    "linkCopied": "Link copied. It opens this design.",
+    "linkFailed": "Copy the page address from the browser bar to share this design."
   },
   "notFound": {
     "title": "Page not found",

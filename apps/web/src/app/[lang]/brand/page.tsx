@@ -19,11 +19,13 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/brand">): 
   };
 }
 
-/** The A's legs at each point, on the star's 74 x 100 box (see StarMark). */
-const TOP = "22.22,42.22 37,0 51.78,42.22";
-const RIGHT = "51.78,42.22 74,50 51.78,57.78";
-const BOTTOM = "51.78,57.78 37,100 22.22,57.78";
-const LEFT = "22.22,57.78 0,50 22.22,42.22";
+/** The A's legs at each point of the whole star (70 x 100 box, before the split). */
+const TOP = "19.94,43.02 35,0 50.06,43.02";
+const RIGHT = "50.06,43.02 70,50 50.06,56.98";
+const BOTTOM = "50.06,56.98 35,100 19.94,56.98";
+const LEFT = "19.94,56.98 0,50 19.94,43.02";
+/** The whole star before the split, for the construction diagram. */
+const WHOLE = "M35,0 C48.85,39.58 51.65,43.58 70,50 C51.65,56.42 48.85,60.42 35,100 C21.15,60.42 18.35,56.42 0,50 C18.35,43.58 21.15,39.58 35,0 Z";
 
 /** The A, four A's turned to the four points, and the star they make. */
 function StarDiagram({ label, theA, four, star }: { label: string; theA: string; four: string; star: string }) {
@@ -40,15 +42,15 @@ function StarDiagram({ label, theA, four, star }: { label: string; theA: string;
         {/* The 38.6 degree tip */}
         <path d="M 99.5 80 A 32 32 0 0 0 120.5 80" strokeWidth="1.2" opacity="0.6" />
         {/* Four A's, one per point; the star's curves leave each tip along them */}
-        <g transform="translate(272 50) scale(2)" strokeWidth="1.2">
+        <g transform="translate(276 50) scale(2)" strokeWidth="1.2">
           <polyline points={TOP} />
           <polyline points={RIGHT} opacity="0.75" />
           <polyline points={BOTTOM} opacity="0.55" />
           <polyline points={LEFT} opacity="0.4" />
-          <path d={STAR_PATH} strokeWidth="0.6" strokeDasharray="2 2" opacity="0.6" />
+          <path d={WHOLE} strokeWidth="0.6" strokeDasharray="2 2" opacity="0.6" />
         </g>
       </g>
-      <path d={STAR_PATH} fill="currentColor" transform="translate(472 50) scale(2)" />
+      <path d={STAR_PATH} fill="currentColor" transform="translate(476 45) scale(2)" />
       <g fill="currentColor" fontSize="15" fontFamily="var(--font-text)" textAnchor="middle">
         <text x="110" y="122" fontSize="13" opacity="0.8">38.6°</text>
         <text x="110" y="282">{theA}</text>

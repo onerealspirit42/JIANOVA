@@ -143,7 +143,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           </div>
         </section>
 
-        <section className="section statement" id="idea" data-moment="word-highlight" aria-labelledby="idea-h">
+        <section className="section statement ground-surface" id="idea" data-moment="word-highlight" aria-labelledby="idea-h">
           <div className="wrap">
             <h2 id="idea-h" className="t-label">
               {t.idea.title}

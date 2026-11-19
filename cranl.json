@@ -1,0 +1,13 @@
+{
+  "$schema": "https://app.cranl.com/api/v1/blueprint.schema.json",
+  "version": 1,
+  "project": "jianova",
+  "apps": {
+    "web": {
+      "repository": "onerealspirit42/JIANOVA",
+      "branch": "main",
+      "build": "dockerfile",
+      "port": 3000
+    }
+  }
+}

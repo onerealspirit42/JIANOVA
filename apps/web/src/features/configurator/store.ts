@@ -17,6 +17,8 @@ type ConfiguratorState = {
   setColor: (part: PartId, color: ColorId) => void;
   reset: () => void;
   undoReset: () => void;
+  /** Replace the whole design, e.g. from a shared link. */
+  loadDesign: (design: Design) => void;
 };
 
 export const useConfigurator = create<ConfiguratorState>((set) => ({
@@ -38,4 +40,5 @@ export const useConfigurator = create<ConfiguratorState>((set) => ({
     set((s) =>
       s.beforeReset ? { design: s.beforeReset, beforeReset: null } : s,
     ),
+  loadDesign: (design) => set({ design, beforeReset: null }),
 }));

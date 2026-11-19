@@ -1,0 +1,9 @@
+**/node_modules
+**/.next
+.git
+.claude
+.agents
+.taste-skill
+**/.taste-skill
+docs
+*.md

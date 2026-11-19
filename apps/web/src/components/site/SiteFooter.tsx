@@ -33,7 +33,7 @@ export function SiteFooter({ lang, dict, page, alternate }: SiteFooterProps) {
         <div className="closing__links">
           <div className="grid">
             <div className="span-4 stack-4">
-              <a className="nav__logo" href={page === "home" ? "#top" : `/${lang}`} aria-label={dict.common.home}>
+              <a className="nav__logo" translate="no" href={page === "home" ? "#top" : `/${lang}`} aria-label={dict.common.home}>
                 <Logo decorative />
               </a>
               <p className="footer__lede">{footer.lede}</p>

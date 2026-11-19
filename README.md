@@ -27,7 +27,9 @@ Early development stage. What exists today:
   - `/customize` – the 3D designer: rotate, zoom, and change the color of each part
   - `/brand` – the visual identity: the logo, its files, colors, type and usage rules
 - The JIANOVA logo: a four-pointed star built from the wordmark's A (the A has no
-  crossbar), beside the wordmark. Files in `apps/web/public/brand/`.
+  crossbar) and split into two halves, a pair mid-stride, beside the wordmark.
+  Files in `apps/web/public/brand/`.
+- Designs can be saved and shared: the designer keeps the colors in the page address.
 
 The shoe shown is a procedurally generated **placeholder**, not the product.
 There is no store yet. The requirements for the final model are in
@@ -64,6 +66,12 @@ pnpm --filter web build:logo     # rewrite the logo files and icons
 When the final 3D model arrives: set `MODEL_URL` in
 `src/features/configurator/parts.ts`, then run `build:stills` so every picture on
 the home page shows the real shoe.
+
+## Deployment
+
+The site is prepared for [CranL](https://cranl.com): a root `Dockerfile` builds a
+standalone Next.js server, and `cranl.json` describes the app. Steps and notes
+are in [`docs/deployment.md`](docs/deployment.md).
 
 ## Design
 
