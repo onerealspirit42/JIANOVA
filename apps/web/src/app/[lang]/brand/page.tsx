@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Logo } from "@/components/brand/Logo";
-import { StarMark } from "@/components/brand/StarMark";
+import { STAR_PATH, StarMark } from "@/components/brand/StarMark";
 import { ActionBar } from "@/components/site/ActionBar";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteNav } from "@/components/site/SiteNav";
@@ -19,11 +19,11 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/brand">): 
   };
 }
 
-/** Tips and inner corners of the star on its 64 x 100 box (see StarMark). */
-const TOP = "16.52,44.22 32,0 47.48,44.22";
-const RIGHT = "47.48,44.22 64,50 47.48,55.78";
-const BOTTOM = "47.48,55.78 32,100 16.52,55.78";
-const LEFT = "16.52,55.78 0,50 16.52,44.22";
+/** The A's legs at each point, on the star's 74 x 100 box (see StarMark). */
+const TOP = "22.22,42.22 37,0 51.78,42.22";
+const RIGHT = "51.78,42.22 74,50 51.78,57.78";
+const BOTTOM = "51.78,57.78 37,100 22.22,57.78";
+const LEFT = "22.22,57.78 0,50 22.22,42.22";
 
 /** The A, four A's turned to the four points, and the star they make. */
 function StarDiagram({ label, theA, four, star }: { label: string; theA: string; four: string; star: string }) {
@@ -39,15 +39,16 @@ function StarDiagram({ label, theA, four, star }: { label: string; theA: string;
         </g>
         {/* The 38.6 degree tip */}
         <path d="M 99.5 80 A 32 32 0 0 0 120.5 80" strokeWidth="1.2" opacity="0.6" />
-        {/* Four A's, one per point */}
-        <g transform="translate(282 50) scale(2)" strokeWidth="1.2">
+        {/* Four A's, one per point; the star's curves leave each tip along them */}
+        <g transform="translate(272 50) scale(2)" strokeWidth="1.2">
           <polyline points={TOP} />
           <polyline points={RIGHT} opacity="0.75" />
           <polyline points={BOTTOM} opacity="0.55" />
           <polyline points={LEFT} opacity="0.4" />
+          <path d={STAR_PATH} strokeWidth="0.6" strokeDasharray="2 2" opacity="0.6" />
         </g>
       </g>
-      <polygon points="32,0 47.48,44.22 64,50 47.48,55.78 32,100 16.52,55.78 0,50 16.52,44.22" fill="currentColor" transform="translate(482 50) scale(2)" />
+      <path d={STAR_PATH} fill="currentColor" transform="translate(472 50) scale(2)" />
       <g fill="currentColor" fontSize="15" fontFamily="var(--font-text)" textAnchor="middle">
         <text x="110" y="122" fontSize="13" opacity="0.8">38.6°</text>
         <text x="110" y="282">{theA}</text>

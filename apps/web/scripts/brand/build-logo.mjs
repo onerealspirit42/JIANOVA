@@ -4,7 +4,10 @@
  *
  * The star: four points, each with the apex angle of the wordmark's A
  * (half-angle atan(15.05 / 43) = 19.29 degrees), so the star is built from the
- * same letter. The vertical points are longer (1 : 0.64), like a guiding star.
+ * same letter. Each side is one smooth curve from tip to tip: it leaves both
+ * tips along the A's legs and bows toward the centre (CURVE = how far along
+ * the legs its control points sit). The vertical points are longer
+ * (1 : 0.74), like a guiding star.
  *
  * Run: pnpm --filter web build:logo   (PNGs need Playwright with Chromium)
  */
@@ -23,7 +26,10 @@ const PAPER = "#faf9fb";
 const ALPHA = Math.atan(15.05 / 43);
 
 /** Corner points of the star (tips N, E, S, W) on a 2-unit tall box. */
-function starPoints(rv = 1, rh = 0.64) {
+const RH = 0.74;
+const CURVE = 0.82;
+
+function starPoints(rv = 1, rh = RH) {
   const tips = [[0, -rv], [rh, 0], [0, rv], [-rh, 0]];
   const inward = [[0, 1], [-1, 0], [0, -1], [1, 0]];
   const rot = ([x, y], a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
@@ -48,11 +54,21 @@ function starPoints(rv = 1, rh = 0.64) {
   return out;
 }
 
-/** The star as an SVG polygon, centred on (cx, cy), `h` tall. */
-const star = (cx, cy, h, fill) =>
-  `<polygon fill="${fill}" points="${starPoints()
-    .map(([x, y]) => `${(cx + (x * h) / 2).toFixed(2)},${(cy + (y * h) / 2).toFixed(2)}`)
-    .join(" ")}"/>`;
+/** The star as an SVG path, centred on (cx, cy), `h` tall. */
+function starPath(cx, cy, h) {
+  const pts = starPoints();
+  const at = ([x, y]) => `${(cx + (x * h) / 2).toFixed(2)},${(cy + (y * h) / 2).toFixed(2)}`;
+  const toward = (p, q) => [p[0] + CURVE * (q[0] - p[0]), p[1] + CURVE * (q[1] - p[1])];
+  let d = `M${at(pts[0])}`;
+  for (let i = 0; i < 4; i++) {
+    const tip = pts[2 * i];
+    const inner = pts[2 * i + 1];
+    const next = pts[(2 * i + 2) % 8];
+    d += ` C${at(toward(tip, inner))} ${at(toward(next, inner))} ${at(next)}`;
+  }
+  return `${d} Z`;
+}
+const star = (cx, cy, h, fill) => `<path fill="${fill}" d="${starPath(cx, cy, h)}"/>`;
 
 // The wordmark: strokes on a 40-unit cap height; the A has no crossbar.
 const WORDMARK_W = 219.62;
@@ -75,7 +91,7 @@ const svg = (w, h, body, bg) =>
 
 // Horizontal lockup: the star 1.2x the cap height, 14 units from the wordmark.
 const STAR_H = 48;
-const STAR_W = STAR_H * 0.64;
+const STAR_W = STAR_H * RH;
 const GAP = 14;
 const H_W = STAR_W + GAP + WORDMARK_W;
 const horizontal = (color) =>
@@ -106,7 +122,7 @@ const files = {
 for (const [name, body] of Object.entries(files)) await writeFile(join(BRAND, name), body);
 await writeFile(join(WEB, "src/app/icon.svg"), appIcon(64, 14));
 console.log(`wrote ${Object.keys(files).length} files to public/brand and src/app/icon.svg`);
-console.log("star points (100 units tall):", starPoints().map(([x, y]) => `${(x * 50).toFixed(2)},${(y * 50).toFixed(2)}`).join(" "));
+console.log("star path (100 units tall):", starPath(RH * 50, 50, 100));
 
 // PNG icons: rendered by Chromium from the SVG (Playwright, found locally or via NODE_PATH).
 let chromium;

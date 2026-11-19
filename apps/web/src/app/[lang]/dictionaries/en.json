@@ -149,7 +149,7 @@
     },
     "star": {
       "title": "Four A's make the star",
-      "text": "Each point has the angle of the wordmark's A, 38.6 degrees at the tip. The points above and below are longer, so the star still reads as a star at 16 pixels.",
+      "text": "Each point has the angle of the wordmark's A, 38.6 degrees at the tip, and each side curves smoothly in to the next point. The points above and below are longer, so the star still reads as a star at 16 pixels.",
       "diagramLabel": "Diagram: the letter A of the wordmark, its 38.6 degree tip, and four copies of it turned to form the star",
       "theA": "The A",
       "four": "Four A's",

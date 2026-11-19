@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { STAR_POINTS } from "./StarMark";
+import { STAR_PATH, STAR_WIDTH } from "./StarMark";
 
 type LogoProps = {
   className?: string;
@@ -20,10 +20,10 @@ type LogoProps = {
 export function Logo({ className, decorative = false, layout = "horizontal" }: LogoProps) {
   const clipId = `logo-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const stacked = layout === "stacked";
-  // Star box: 64 x 100 units, scaled to the lockup's star height.
+  // Star box: 74 x 100 units, scaled to the lockup's star height.
   const starH = stacked ? 64 : 48;
   const starScale = starH / 100;
-  const starW = 64 * starScale;
+  const starW = STAR_WIDTH * starScale;
   const width = stacked ? 219.62 : starW + 14 + 219.62;
   const height = stacked ? 64 + 22 + 40 : 48;
   const starX = stacked ? (219.62 - starW) / 2 : 0;
@@ -38,8 +38,8 @@ export function Logo({ className, decorative = false, layout = "horizontal" }: L
         ? { "aria-hidden": true, focusable: false }
         : { role: "img", "aria-label": "JIANOVA" })}
     >
-      <polygon
-        points={STAR_POINTS}
+      <path
+        d={STAR_PATH}
         fill="currentColor"
         transform={`translate(${starX} 0) scale(${starScale})`}
       />
