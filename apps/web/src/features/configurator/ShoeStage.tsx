@@ -60,21 +60,28 @@ export type ShoeStageProps = {
   className?: string;
 };
 
-/** Shoe length plus breathing room, used to fit the camera to any screen. */
-const FIT_WIDTH = 2.84 * 1.25;
-const FIT_HEIGHT = 1.2 * 2.6;
+/** The shoe (2.84 long, 1.46 tall) plus breathing room, to fit the camera to any screen. */
+const FIT_WIDTH = 2.84 * 1.14;
+const FIT_HEIGHT = 1.46 * 2.05;
 /** Initial viewing direction: a three-quarter view from the outer side, toe forward. */
 const VIEW_DIRECTION = new THREE.Vector3(0.62, 0.3, 0.72).normalize();
 const TARGET = new THREE.Vector3(0, 0.05, 0);
 
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+
 /**
  * Places the camera so the whole shoe fits the canvas, whatever its shape:
- * wide desktop panels and narrow phone screens alike. Runs on resize.
+ * wide desktop panels and narrow phone screens alike. Runs on resize. With
+ * `intro`, the camera first glides in from a little further away, once, and
+ * stops as soon as the user takes hold of the view.
  */
-function FitCamera() {
+function FitCamera({ intro }: { intro: boolean }) {
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const invalidate = useThree((s) => s.invalidate);
+  const controls = useThree((s) => s.controls) as unknown as (Controls & THREE.EventDispatcher<{ start: object }>) | null;
+  const dolly = useRef<{ from: number; to: number; t: number } | null>(null);
+  const introDone = useRef(false);
 
   useEffect(() => {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
@@ -82,10 +89,41 @@ function FitCamera() {
     const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     const tanH = tanV * aspect;
     const distance = Math.max(FIT_WIDTH / 2 / tanH, FIT_HEIGHT / 2 / tanV);
-    camera.position.copy(TARGET).addScaledVector(VIEW_DIRECTION, distance);
+    let start = distance;
+    if (intro && !introDone.current) {
+      introDone.current = true;
+      start = distance * 1.14;
+      dolly.current = { from: start, to: distance, t: 0 };
+    } else {
+      dolly.current = null;
+    }
+    camera.position.copy(TARGET).addScaledVector(VIEW_DIRECTION, start);
     camera.lookAt(TARGET);
     invalidate();
-  }, [camera, size.width, size.height, invalidate]);
+  }, [camera, size.width, size.height, invalidate, intro]);
+
+  useEffect(() => {
+    if (!controls) return;
+    const stop = () => {
+      dolly.current = null;
+    };
+    controls.addEventListener("start", stop);
+    return () => controls.removeEventListener("start", stop);
+  }, [controls]);
+
+  useFrame((_, delta) => {
+    const d = dolly.current;
+    if (!d) return;
+    d.t = Math.min(1, d.t + delta / 2.2);
+    const target = controls?.target ?? TARGET;
+    const offset = camera.position.clone().sub(target);
+    offset.setLength(d.from + (d.to - d.from) * easeOutCubic(d.t));
+    camera.position.copy(target).add(offset);
+    camera.lookAt(target);
+    controls?.update();
+    if (d.t >= 1) dolly.current = null;
+    invalidate();
+  });
 
   return null;
 }
@@ -144,7 +182,7 @@ function ViewDriver({
       p.logZoom = 0;
       return;
     }
-    const k = reducedMotion ? 1 : 1 - Math.exp(-delta * 9);
+    const k = reducedMotion ? 1 : 1 - Math.exp(-delta * 5.5);
     const angle = p.angle * k;
     const logZoom = p.logZoom * k;
     p.angle -= angle;
@@ -171,7 +209,13 @@ function ViewDriver({
 const stageButton =
   "[display:grid] size-11 place-items-center rounded-full border border-white/15 bg-white/10 text-white backdrop-blur-md transition-[background-color,scale] duration-150 ease-out hover:bg-white/20 active:scale-[0.96]";
 
-/** Slowly turns its children around the vertical axis, like a turntable. */
+/** Radians per second: one full turn in about 40 seconds. */
+const TURN_SPEED = 0.16;
+
+/**
+ * Slowly turns its children around the vertical axis, like a turntable. The
+ * turn eases in when it starts and eases out when it is paused.
+ */
 function Turntable({
   active,
   children,
@@ -180,8 +224,18 @@ function Turntable({
   children: ReactNode;
 }) {
   const group = useRef<THREE.Group>(null);
+  const speed = useRef(0);
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => invalidate(), [active, invalidate]);
   useFrame((_, delta) => {
-    if (active && group.current) group.current.rotation.y += delta * 0.28;
+    const target = active ? TURN_SPEED : 0;
+    speed.current += (target - speed.current) * (1 - Math.exp(-delta * 1.6));
+    if (Math.abs(speed.current) < 1e-4 && !active) {
+      speed.current = 0;
+      return;
+    }
+    if (group.current) group.current.rotation.y += delta * speed.current;
+    invalidate();
   });
   return <group ref={group}>{children}</group>;
 }
@@ -250,6 +304,8 @@ export function ShoeStage({
   // they never sit on top of the "could not be shown" message.
   const [ready, setReady] = useState(false);
   const [paused, setPaused] = useState(false);
+  // The model fades in once it has loaded, rather than appearing at once.
+  const [modelReady, setModelReady] = useState(false);
   const commandsRef = useRef<ViewCommands | null>(null);
   // Render continuously only while turning on screen; otherwise render on
   // demand (after a change or interaction), which saves battery.
@@ -262,7 +318,13 @@ export function ShoeStage({
   return (
     <div ref={ref} className={className}>
       <StageErrorBoundary fallback={unavailable}>
-        <div role="img" aria-label={label} className="absolute inset-0">
+        <div
+          role="img"
+          aria-label={label}
+          className={`absolute inset-0 transition-[opacity,scale] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-opacity motion-reduce:duration-500 ${
+            modelReady ? "scale-100 opacity-100" : "scale-[0.98] opacity-0 motion-reduce:scale-100"
+          }`}
+        >
           <Canvas
             frameloop={frameloop}
             dpr={[1, 2]}
@@ -285,6 +347,8 @@ export function ShoeStage({
               onSelectPart={onSelectPart}
               reducedMotion={reducedMotion}
               commandsRef={commandsRef}
+              modelReady={modelReady}
+              onModelReady={() => setModelReady(true)}
             />
           </Canvas>
         </div>
@@ -337,6 +401,8 @@ function Scene({
   onSelectPart,
   reducedMotion,
   commandsRef,
+  modelReady,
+  onModelReady,
 }: {
   design: Design;
   interactive: boolean;
@@ -346,15 +412,17 @@ function Scene({
   onSelectPart?: (part: PartId) => void;
   reducedMotion: boolean;
   commandsRef: { current: ViewCommands | null };
+  modelReady: boolean;
+  onModelReady: () => void;
 }) {
   return (
     <>
-          <FitCamera />
+          <FitCamera intro={modelReady && !reducedMotion} />
           {interactive && (
             <ViewDriver commandsRef={commandsRef} reducedMotion={reducedMotion} />
           )}
           <Suspense fallback={null}>
-            <group position={[0, -0.55, 0]}>
+            <group position={[0, -0.68, 0]}>
               <Turntable active={turning}>
                 <ShoeModel
                   design={design}
@@ -362,6 +430,7 @@ function Scene({
                   highlightTick={highlightTick}
                   onSelectPart={onSelectPart}
                   reducedMotion={reducedMotion}
+                  onReady={onModelReady}
                 />
                 <ContactShadows
                   position={[0, 0, 0]}
@@ -418,7 +487,9 @@ function Scene({
             enablePan={false}
             enableZoom={interactive}
             enableDamping
-            dampingFactor={0.08}
+            dampingFactor={0.06}
+            rotateSpeed={0.75}
+            zoomSpeed={0.7}
             minDistance={MIN_DISTANCE}
             maxDistance={MAX_DISTANCE}
             minPolarAngle={0.25}

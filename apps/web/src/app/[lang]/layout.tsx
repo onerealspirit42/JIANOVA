@@ -49,7 +49,7 @@ export const viewport: Viewport = {
 
 /** The hero's entrance and the moments' guard, set before the first paint. */
 const HEAD_SCRIPT =
-  "document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700);" +
+  "document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),1000);" +
   "document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500);";
 
 export default async function RootLayout({

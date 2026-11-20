@@ -1,21 +1,24 @@
 /**
  * Configurator model definition.
  *
- * Everything model-specific lives here. To use a different GLB, export it
- * with meshes named as in `meshes` below (or update the names), and point
- * MODEL_URL at the new file. Nothing else needs to change.
+ * The shoe is public/models/shoe.glb, built by scripts/model/build-shoe.py
+ * from a licensed 3D model of a knit running shoe (© 2021 Shopify, CC BY 4.0,
+ * modified). Every vertex carries the index of its part in PART_IDS, and
+ * shoe-material.js colours the parts on the GPU. To use another model, tag its
+ * vertices the same way (a `_PART` attribute) and point MODEL_URL at it.
  */
+import { SHOE_PARTS } from "./shoe-material.js";
 
-export const MODEL_URL = "/models/shoe-placeholder.glb";
+export const MODEL_URL = "/models/shoe.glb";
 
-/** True while the procedurally generated stand-in model is in use. */
-export const IS_PLACEHOLDER_MODEL = true;
+/** True while the shoe shown is a stand-in, not the final JIANOVA design. */
+export const IS_STAND_IN_MODEL = true;
 
 export const PART_IDS = [
   "upper",
-  "tongue",
+  "tabs",
   "laces",
-  "collar",
+  "lining",
   "heel",
   "midsole",
   "outsole",
@@ -23,16 +26,11 @@ export const PART_IDS = [
 
 export type PartId = (typeof PART_IDS)[number];
 
-/** Which mesh names in the GLB belong to each customizable part. */
-export const PART_MESHES: Record<PartId, readonly string[]> = {
-  upper: ["upper"],
-  tongue: ["tongue"],
-  laces: ["laces"],
-  collar: ["collar"],
-  heel: ["heel"],
-  midsole: ["midsole"],
-  outsole: ["outsole"],
-};
+if (PART_IDS.join() !== SHOE_PARTS.join()) {
+  throw new Error("PART_IDS and SHOE_PARTS must list the parts in the same order");
+}
+
+export const partIndex = (part: PartId) => PART_IDS.indexOf(part);
 
 export const COLOR_IDS = [
   "chalk",
@@ -60,11 +58,12 @@ export const COLORS: Record<ColorId, string> = {
 
 export type Design = Record<PartId, ColorId>;
 
+/** The designer's first look: white knit with royal purple details. */
 export const DEFAULT_DESIGN: Design = {
   upper: "chalk",
-  tongue: "chalk",
+  tabs: "royal",
   laces: "royal",
-  collar: "royal",
+  lining: "royal",
   heel: "royal",
   midsole: "chalk",
   outsole: "midnight",
@@ -75,11 +74,3 @@ export const isPartId = (value: string): value is PartId =>
 
 export const isColorId = (value: string): value is ColorId =>
   (COLOR_IDS as readonly string[]).includes(value);
-
-/** Find the part a mesh belongs to, or null for non-customizable meshes. */
-export function partForMesh(meshName: string): PartId | null {
-  for (const id of PART_IDS) {
-    if (PART_MESHES[id].includes(meshName)) return id;
-  }
-  return null;
-}

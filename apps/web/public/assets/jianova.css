@@ -149,3 +149,66 @@ a, button, label, input, summary { touch-action: manipulation; }
    the Arabic answers run shorter and would leave the questions' second screen half empty. */
 html[lang="ar"] .hero h1 { line-height: 1.2; }
 @media (max-width: 639px) { html[lang="ar"] .phone-shot { width: 272px; } }
+
+/* ------------------------------------------------------------- motion
+   Quiet luxury moves slowly and lands softly: the kit's timings, eased out
+   with a long tail (no bounce, nothing past its mark), a little longer than a
+   product tool's. Hover and press still answer at once; only the settling is
+   longer. Reduced motion keeps the kit's own rules (colour changes only). */
+:root {
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --dur: 260ms;
+  --m-in: 240ms;
+  --m-out: 360ms;
+  --m-press: 140ms;
+  --m-panel: 320ms;
+  --m-close: 220ms;
+  --m-slide: 420ms;
+  --m-image: 1200ms;
+  --m-image-out: 900ms;
+  --m-ease-enter: cubic-bezier(.16, 1, .3, 1);
+  /* the hero's entrance at 1.45 x the kit's pace: about 1.6 s in all */
+  --m-enter-pace: 1.45;
+}
+
+/* In-page links glide to their section instead of jumping. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* Steps: the pictures cross-fade and settle more slowly, the text opens softly.
+   (The moment's own CSS loads after this file, hence #steps.) */
+@media (prefers-reduced-motion: no-preference) {
+  #steps[data-moment="pinned-chapters"].is-live .mo-pc__visual {
+    transition: opacity 900ms var(--ease), transform 1600ms var(--m-ease-enter);
+  }
+  #steps[data-moment="pinned-chapters"].is-live .mo-pc__step p {
+    transition: grid-template-rows 700ms var(--ease), opacity 600ms var(--ease);
+  }
+  #steps[data-moment="pinned-chapters"].is-live :is(.mo-pc__step, .mo-pc__step h3) {
+    transition: border-color 600ms var(--ease), color 600ms var(--ease);
+  }
+  /* The statement: each word lights up gently as it is read. */
+  #idea .mo-wh .mo-w { transition: color 520ms var(--ease); }
+}
+
+/* Colours: the new colourway fades in over the one before (ColorPicker.tsx). */
+/* The pictures share one grid cell (no positioning: Tailwind's start-7 is an inset). */
+.color-frame { display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
+.color-frame img { grid-area: 1 / 1; opacity: 0; }
+.color-frame img.is-under { opacity: 1; z-index: 1; }
+.color-frame img.is-on { opacity: 1; z-index: 2; }
+@media (prefers-reduced-motion: no-preference) {
+  .color-frame img.is-on { transition: opacity 800ms var(--ease); }
+  @starting-style { .color-frame img.is-on { opacity: 0; } }
+}
+
+/* Arabic reads right to left: the arrows of text links point left, nudge left,
+   and the underline sits under the words, on the right of the arrow. */
+[dir="rtl"] :is(.btn--arrow, .link)::after { content: "\2190"; }
+html[dir="rtl"]:not([data-motion="off"]) :is(.btn--arrow, .link):focus-visible::after { transform: translateX(-3px); }
+@media (hover: hover) and (pointer: fine) {
+  html[dir="rtl"]:not([data-motion="off"]) :is(.btn--arrow, .link):hover::after { transform: translateX(-3px); }
+}
+html[dir="rtl"]:not([data-motion="off"]) .link,
+html[dir="rtl"]:not([data-motion="off"]) .link:is(:hover, :focus-visible) { background-position: 100% 100%, 100% 100%; }

@@ -68,6 +68,17 @@ export function SiteFooter({ lang, dict, page, alternate }: SiteFooterProps) {
           </div>
           <div className="footer__legal">
             <span>{footer.legal}</span>
+            {/* The one credit line: the stand-in shoe's licence asks for it. */}
+            <span>
+              {footer.credit.before}
+              <a href="https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/MaterialsVariantsShoe" lang="en">
+                {footer.credit.title}
+              </a>
+              {footer.credit.after}
+              <a href="https://creativecommons.org/licenses/by/4.0/" lang="en">
+                {footer.credit.license}
+              </a>
+            </span>
           </div>
         </div>
       </div>

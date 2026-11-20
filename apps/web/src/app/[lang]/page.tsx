@@ -16,7 +16,7 @@ import { getDictionary, hasLocale } from "./dictionaries";
         footer-columns · close-type · rhythm brand-band · buttons block ·
         mark: the client's star logo · moments: pinned-chapters (#steps),
         word-highlight (#idea).
-  Sections: hero (object) · parts (strip of four close-ups) · steps (pinned
+  Sections: hero (object) · parts (a pair of close-ups) · steps (pinned
   chapters, three views) · idea (statement) · colors (brand band, swatches swap
   the picture) · questions (faq) · footer.closing.
 */
@@ -27,10 +27,8 @@ const shoe = (name: string) => ({
 });
 
 const PART_IMAGES: Record<string, string> = {
-  upper: "part-upper",
   laces: "part-laces",
   heel: "part-heel",
-  sole: "part-sole",
 };
 
 const STEP_IMAGES = ["step-part", "step-colour", "step-turn"];
@@ -74,7 +72,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                   srcSet="/images/shoe/hero-sm.webp 1200w, /images/shoe/hero.webp 2400w"
                   sizes="(min-width: 1440px) 1280px, 100vw"
                   width={2400}
-                  height={1174}
+                  height={1311}
                   alt={t.hero.alt}
                   fetchPriority="high"
                 />

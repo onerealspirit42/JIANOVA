@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "build:model": "node scripts/build-placeholder-shoe.mjs && gltf-transform quantize public/models/shoe-placeholder.glb public/models/shoe-placeholder.glb",
+    "build:model": "python3 scripts/model/build-shoe.py",
     "build:stills": "node scripts/stills/render-stills.mjs",
     "build:logo": "node scripts/brand/build-logo.mjs"
   },
@@ -25,7 +25,6 @@
     "zustand": "^5.1.0"
   },
   "devDependencies": {
-    "@gltf-transform/cli": "^4.5.1",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -8,9 +8,10 @@
  *   pnpm --filter web build:stills -- --only hero,colour-ember   (some stills)
  *   pnpm --filter web build:stills -- --model /public/models/shoe.glb
  *
- * When the final model arrives, change MODEL_URL in
- * src/features/configurator/parts.ts, run this again, and every picture on
- * the home page updates. The camera for each still is in STILLS below.
+ * The shoe is public/models/shoe.glb (built by scripts/model/build-shoe.py),
+ * coloured with the designer's own material (shoe-material.js). When the final
+ * model arrives, point MODEL_URL in parts.ts and --model here at it and run
+ * this again. The camera for each still is in STILLS below.
  */
 import { createServer } from "node:http";
 import { readFile, writeFile, mkdir, rm } from "node:fs/promises";
@@ -28,7 +29,7 @@ const opt = (name) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const only = opt("only")?.split(",");
-const model = opt("model") ?? "/public/models/shoe-placeholder.glb";
+const model = opt("model") ?? "/public/models/shoe.glb";
 
 // The colours and part names match src/features/configurator/parts.ts.
 const C = {
@@ -41,39 +42,44 @@ const C = {
   ember: "#b4532e",
   midnight: "#17121e",
 };
-const design = (upper, tongue, laces, collar, heel, midsole, outsole) => ({
-  upper: C[upper], tongue: C[tongue], laces: C[laces], collar: C[collar],
-  heel: C[heel], midsole: C[midsole], outsole: C[outsole], lining: "#120a1c",
+const design = (upper, tabs, laces, lining, heel, midsole, outsole) => ({
+  upper: C[upper], tabs: C[tabs], laces: C[laces], lining: C[lining],
+  heel: C[heel], midsole: C[midsole], outsole: C[outsole],
 });
 
 /** The brand colourway: the hero and the home page's main look. */
-const BRAND = design("royal", "royal", "chalk", "royal", "royal", "chalk", "midnight");
-const CHALK = design("chalk", "chalk", "royal", "royal", "royal", "chalk", "midnight");
+const BRAND = design("royal", "chalk", "chalk", "midnight", "royal", "chalk", "midnight");
+/** The designer's first look: white knit with royal purple details. */
+const CHALK = design("chalk", "royal", "royal", "royal", "royal", "chalk", "midnight");
+const EMBER = design("chalk", "ember", "ember", "midnight", "ember", "chalk", "midnight");
+const DARK = new Set(["royal", "midnight", "oasis", "ember", "stone"]);
 
-// Cameras: the model is centred on x and z, the sole on y = 0, the toe on +x.
-const SIDE = { camera: [0.2, 0.98, 5.2], target: [0.02, 0.56, 0], fov: 18 };
-const THREE_Q = { camera: [5.6, 2.3, 7.2], target: [0.05, 0.42, 0], fov: 18 };
+// Cameras: the shoe is 2.84 long and 1.46 tall, sole on y = 0, centred on x
+// and z, the toe on +x and the outer side on +z.
+const SIDE = { camera: [0.15, 1.05, 5.6], target: [0.02, 0.6, 0], fov: 18 };
+const THREE_Q = { camera: [5.4, 2.6, 7.0], target: [0.05, 0.6, 0], fov: 16 };
 const STILLS = [
   { name: "hero", width: 3000, height: 1500, colors: BRAND, trim: 0.012, ...SIDE },
-  // Close-ups of the parts (4:3), each part in a colour that sets it apart
-  { name: "part-laces", width: 1600, height: 1200, colors: design("oasis", "chalk", "midnight", "oasis", "midnight", "chalk", "midnight"), camera: [1.7, 3.9, 3.3], target: [0.3, 0.62, 0], fov: 24 },
-  { name: "part-heel", width: 1600, height: 1200, colors: BRAND, camera: [-4.6, 1.7, 3.0], target: [-0.65, 0.55, 0], fov: 24 },
-  { name: "part-sole", width: 1600, height: 1200, colors: design("dune", "dune", "midnight", "stone", "stone", "chalk", "ember"), camera: [2.2, 0.55, 4.6], target: [0.25, 0.3, 0], fov: 24 },
-  { name: "part-upper", width: 1600, height: 1200, colors: design("midnight", "midnight", "chalk", "stone", "stone", "chalk", "midnight"), camera: [4.6, 2.0, 3.0], target: [0.55, 0.5, 0], fov: 24 },
+  // Close-ups for the parts section (4:3), each in a colourway that sets the parts apart
+  { name: "part-laces", width: 1600, height: 1200, colors: design("oasis", "chalk", "chalk", "midnight", "oasis", "chalk", "midnight"), camera: [2.1, 4.3, 3.4], target: [0.15, 0.7, 0], fov: 27 },
+  { name: "part-heel", width: 1600, height: 1200, colors: CHALK, camera: [-4.3, 2.3, 3.0], target: [-0.7, 0.68, 0.1], fov: 25 },
   // How it works: three steps (16:10)
   { name: "step-part", width: 1600, height: 1000, colors: CHALK, highlight: "laces", ...THREE_Q },
-  { name: "step-colour", width: 1600, height: 1000, colors: design("chalk", "chalk", "ember", "ember", "ember", "chalk", "midnight"), ...THREE_Q },
-  { name: "step-turn", width: 1600, height: 1000, colors: design("chalk", "chalk", "ember", "ember", "ember", "chalk", "midnight"), camera: [-5.8, 3.4, -5.6], target: [-0.1, 0.45, 0], fov: 18 },
-  // Eight colourways for the colour picker: the upper and tongue in each colour (4:3)
-  ...Object.entries(C).map(([id, hex]) => ({
-    name: `colour-${id}`,
-    width: 1600,
-    height: 1200,
-    colors: { ...BRAND, upper: hex, tongue: hex, laces: id === "chalk" ? C.royal : C.chalk, collar: id === "royal" ? C.midnight : C.royal, heel: id === "royal" ? C.midnight : C.royal },
-    camera: [5.0, 1.75, 6.6],
-    target: [0.05, 0.48, 0],
-    fov: 21,
-  })),
+  { name: "step-colour", width: 1600, height: 1000, colors: EMBER, ...THREE_Q },
+  { name: "step-turn", width: 1600, height: 1000, colors: EMBER, camera: [-5.8, 3.3, -5.2], target: [-0.1, 0.6, 0], fov: 16 },
+  // Eight colourways for the colour picker: the upper in each colour (4:3)
+  ...Object.entries(C).map(([id, hex]) => {
+    const accent = DARK.has(id) ? C.chalk : C.royal;
+    return {
+      name: `colour-${id}`,
+      width: 1600,
+      height: 1200,
+      colors: { upper: hex, tabs: accent, laces: accent, lining: DARK.has(id) ? C.midnight : C.royal, heel: accent, midsole: C.chalk, outsole: C.midnight },
+      camera: [5.0, 2.05, 6.6],
+      target: [0.05, 0.6, 0],
+      fov: 21,
+    };
+  }),
 ];
 
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".glb": "model/gltf-binary" };

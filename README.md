@@ -11,7 +11,7 @@ To combine premium footwear design, modern technology, and personalization into 
 ## Key Features
 
 - **Interactive 3D Visualization:** Explore shoes in a realistic 3D environment.
-  *Working today with a simplified placeholder model; the final shoe model is in design.*
+  *Working today with a realistic stand-in model (a licensed knit running shoe); the JIANOVA shoe is in design.*
 - **Real-time Customization:** Personalize shoe colors, materials, and laces.
   *Colors for seven parts (including laces) work today; materials are planned.*
 - **Visual Identity:** A four-pointed star built from the wordmark's A, with downloadable logo files.
@@ -33,7 +33,11 @@ Early development stage. What exists today:
   `apps/web/public/brand/`.
 - Designs can be saved and shared: the designer keeps the colors in the page address.
 
-The shoe shown is a procedurally generated **placeholder**, not the product.
+The shoe shown is a **stand-in**, not the product: a 3D model of a knit running
+shoe, "Materials Variants Shoe" © 2021 Shopify, used under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) with changes (its side
+stripes, heel logo and lettering removed, its parts made recolourable; see
+`apps/web/public/models/LICENSE.md`). The site credits it in the footer.
 There is no store yet. The requirements for the final model are in
 [`docs/3d-model-spec.md`](docs/3d-model-spec.md).
 
@@ -45,7 +49,8 @@ There is no store yet. The requirements for the final model are in
   - `src/components/brand` – the logo (`Logo`, `StarMark`)
   - `public/assets` – the design system the marketing pages use (see Design below)
   - `public/images/shoe` – still pictures of the shoe, rendered from the 3D model
-  - `scripts/build-placeholder-shoe.mjs` – generates the placeholder shoe model
+  - `public/models/shoe.glb` – the 3D shoe, every vertex tagged with its part
+  - `scripts/model/build-shoe.py` – builds `shoe.glb` from the licensed source model
   - `scripts/stills/` – renders the shoe stills from the model
   - `scripts/brand/` – writes the logo files and icons
 - `docs/` – project documentation
@@ -60,14 +65,15 @@ pnpm install
 pnpm dev     # start the local development server
 pnpm lint    # check code quality
 pnpm build   # create a production build
-pnpm --filter web build:model    # regenerate the placeholder 3D model
+pnpm --filter web build:model    # rebuild the 3D shoe (needs Python with numpy, pillow, opencv-python-headless)
 pnpm --filter web build:stills   # re-render the shoe stills (needs Playwright and ffmpeg)
 pnpm --filter web build:logo     # rewrite the logo files and icons
 ```
 
-When the final 3D model arrives: set `MODEL_URL` in
-`src/features/configurator/parts.ts`, then run `build:stills` so every picture on
-the home page shows the real shoe.
+When the final 3D model arrives: tag its vertices with their part (a `_PART`
+attribute, as `build-shoe.py` does), set `MODEL_URL` in
+`src/features/configurator/parts.ts`, then run `build:stills` so every picture
+on the home page shows the real shoe.
 
 ## Deployment
 

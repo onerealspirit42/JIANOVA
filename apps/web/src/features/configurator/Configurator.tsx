@@ -8,7 +8,7 @@ import type { ViewMessages } from "./ShoeStage";
 import {
   COLOR_IDS,
   COLORS,
-  IS_PLACEHOLDER_MODEL,
+  IS_STAND_IN_MODEL,
   PART_IDS,
   isColorId,
   isPartId,
@@ -19,7 +19,7 @@ import {
 export type ConfiguratorMessages = {
   title: string;
   intro: string;
-  placeholderNote: string;
+  modelNote: string;
   partsLegend: string;
   colorsLegend: string;
   reset: string;
@@ -115,9 +115,9 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
           {messages.title}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-pretty text-ink-500">{messages.intro}</p>
-        {IS_PLACEHOLDER_MODEL && (
+        {IS_STAND_IN_MODEL && (
           <p className="mt-4 rounded-sm bg-brand-50 px-3 py-2 text-xs leading-relaxed text-brand-700">
-            {messages.placeholderNote}
+            {messages.modelNote}
           </p>
         )}
 
@@ -129,7 +129,7 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
             {PART_IDS.map((part) => (
               <label
                 key={part}
-                className="flex cursor-pointer items-center gap-3 rounded-sm border border-line px-3 py-2.5 text-sm text-brand-900 transition-colors hover:border-brand-300 has-checked:border-brand-900 has-checked:bg-brand-50 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-500"
+                className="flex cursor-pointer items-center gap-3 rounded-sm border border-line px-3 py-2.5 text-sm text-brand-900 transition-[border-color,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-brand-300 has-checked:border-brand-900 has-checked:bg-brand-50 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-500"
               >
                 <input
                   type="radio"
@@ -141,7 +141,7 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
                 />
                 <span
                   aria-hidden
-                  className="size-3.5 shrink-0 rounded-full ring-1 ring-black/10"
+                  className="size-3.5 shrink-0 rounded-full ring-1 ring-black/10 transition-[background-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   style={{ backgroundColor: COLORS[design[part]] }}
                 />
                 {messages.parts[part]}
@@ -175,12 +175,12 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
                 />
                 <span
                   aria-hidden
-                  className="size-9 rounded-full ring-1 ring-black/10 transition-transform peer-checked:scale-90"
+                  className="size-9 rounded-full ring-1 ring-black/10 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] peer-checked:scale-90"
                   style={{ backgroundColor: COLORS[color] }}
                 />
                 <span
                   aria-hidden
-                  className="absolute inset-0 rounded-full ring-0 ring-brand-900 transition-[box-shadow] peer-checked:ring-2"
+                  className="absolute inset-0 rounded-full ring-0 ring-brand-900 transition-[box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] peer-checked:ring-2"
                 />
               </label>
             ))}
@@ -194,14 +194,14 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
           <button
             type="button"
             onClick={reset}
-            className="py-2 text-sm text-brand-900 underline underline-offset-8 transition-colors hover:text-brand-500"
+            className="py-2 text-sm text-brand-900 underline underline-offset-8 transition-colors duration-300 hover:text-brand-500"
           >
             {messages.reset}
           </button>
           <button
             type="button"
             onClick={copyLink}
-            className="py-2 text-sm text-brand-900 underline underline-offset-8 transition-colors hover:text-brand-500"
+            className="py-2 text-sm text-brand-900 underline underline-offset-8 transition-colors duration-300 hover:text-brand-500"
           >
             {messages.copyLink}
           </button>
@@ -215,7 +215,7 @@ export function Configurator({ messages }: { messages: ConfiguratorMessages }) {
                 <button
                   type="button"
                   onClick={undoReset}
-                  className="ms-1 py-2 font-medium text-brand-900 underline underline-offset-8 transition-colors hover:text-brand-500"
+                  className="ms-1 py-2 font-medium text-brand-900 underline underline-offset-8 transition-colors duration-300 hover:text-brand-500"
                 >
                   {messages.undo}
                 </button>

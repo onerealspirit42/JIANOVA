@@ -1,8 +1,9 @@
 <!doctype html>
 <!--
   Studio renderer for the home page's shoe stills. Opened by render-stills.mjs
-  in headless Chromium; not part of the website. It loads the same GLB the
-  configurator uses, so new stills come from the real model once it arrives.
+  in headless Chromium; not part of the website. It loads the same GLB and the
+  same part-colouring material as the 3D designer, so the pictures and the
+  designer always show the same shoe.
 -->
 <html>
 <head>
@@ -20,11 +21,15 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { HorizontalBlurShader } from "three/addons/shaders/HorizontalBlurShader.js";
+import { VerticalBlurShader } from "three/addons/shaders/VerticalBlurShader.js";
+import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
+import { applyShoeMaterial, SHOE_PARTS } from "/src/features/configurator/shoe-material.js";
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.86;
+renderer.toneMappingExposure = 0.9;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.setClearColor(0x000000, 0);
 document.body.appendChild(renderer.domElement);
@@ -32,52 +37,84 @@ document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = 0.7;
+scene.environmentIntensity = 0.8;
 
-const key = new THREE.DirectionalLight(0xffffff, 1.5);
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
 key.position.set(-3, 6, 4);
 scene.add(key);
-const rim = new THREE.DirectionalLight(0xffffff, 0.6);
+const rim = new THREE.DirectionalLight(0xffffff, 0.7);
 rim.position.set(4, 3, -5);
 scene.add(rim);
 
-/** A soft oval shadow under the sole, so the shoe sits on the page's ground. */
-function shadowPlane(width, depth) {
-  const c = document.createElement("canvas");
-  c.width = c.height = 256;
-  const g = c.getContext("2d");
-  const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
-  grad.addColorStop(0, "rgba(28,16,41,0.42)");
-  grad.addColorStop(0.55, "rgba(28,16,41,0.16)");
-  grad.addColorStop(1, "rgba(28,16,41,0)");
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 256, 256);
-  const tex = new THREE.CanvasTexture(c);
-  const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(width, depth),
-    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }),
-  );
-  plane.rotation.x = -Math.PI / 2;
-  plane.position.y = 0.002;
-  return plane;
-}
-
-const modelUrl = new URLSearchParams(location.search).get("m") ?? "/public/models/shoe-placeholder.glb";
+const modelUrl = new URLSearchParams(location.search).get("m") ?? "/public/models/shoe.glb";
 const gltf = await new GLTFLoader().loadAsync(modelUrl);
 const shoe = gltf.scene;
+let mesh;
+shoe.traverse((o) => { if (o.isMesh) mesh = o; });
+const paint = applyShoeMaterial(mesh);
+scene.add(shoe);
 const box = new THREE.Box3().setFromObject(shoe);
 const size = box.getSize(new THREE.Vector3());
-shoe.position.y -= box.min.y;
-scene.add(shoe);
-scene.add(shadowPlane(size.x * 1.25, size.z * 1.9));
 
-const meshes = {};
-shoe.traverse((o) => {
-  if (o.isMesh) {
-    o.material = o.material.clone();
-    meshes[o.name] = o;
-  }
-});
+/**
+ * A soft contact shadow, as drei's ContactShadows makes it: the shoe seen
+ * from the ground up, darker where it is closer to the ground, then blurred.
+ */
+function contactShadow({ width, depth, far, blur, opacity, resolution = 1024, color = "#0b0910" }) {
+  const rt = new THREE.WebGLRenderTarget(resolution, resolution);
+  const rtBlur = new THREE.WebGLRenderTarget(resolution, resolution);
+  rt.texture.generateMipmaps = rtBlur.texture.generateMipmaps = false;
+  const camera = new THREE.OrthographicCamera(-width / 2, width / 2, depth / 2, -depth / 2, 0, far);
+  camera.up.set(0, 0, 1);
+  camera.lookAt(0, 1, 0);
+  const depthMaterial = new THREE.MeshDepthMaterial();
+  depthMaterial.depthTest = depthMaterial.depthWrite = false;
+  depthMaterial.onBeforeCompile = (shader) => {
+    shader.uniforms.ucolor = { value: new THREE.Color(color) };
+    shader.fragmentShader = shader.fragmentShader
+      .replace("void main() {", "uniform vec3 ucolor;\nvoid main() {")
+      .replace("vec4( vec3( 1.0 - fragCoordZ ), opacity );", "vec4( ucolor, ( 1.0 - fragCoordZ ) );");
+  };
+  const h = new THREE.ShaderMaterial(HorizontalBlurShader);
+  const v = new THREE.ShaderMaterial(VerticalBlurShader);
+  const quad = new FullScreenQuad();
+  const pass = (amount) => {
+    quad.material = h;
+    h.uniforms.tDiffuse.value = rt.texture;
+    h.uniforms.h.value = amount / resolution;
+    renderer.setRenderTarget(rtBlur);
+    quad.render(renderer);
+    quad.material = v;
+    v.uniforms.tDiffuse.value = rtBlur.texture;
+    v.uniforms.v.value = amount / resolution;
+    renderer.setRenderTarget(rt);
+    quad.render(renderer);
+  };
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(width, depth).rotateX(Math.PI / 2),
+    new THREE.MeshBasicMaterial({ map: rt.texture, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }),
+  );
+  plane.position.y = 0.001;
+  return {
+    plane,
+    update() {
+      plane.visible = false;
+      scene.overrideMaterial = depthMaterial;
+      renderer.setRenderTarget(rt);
+      renderer.setClearColor(0x000000, 0);
+      renderer.clear();
+      renderer.render(scene, camera);
+      scene.overrideMaterial = null;
+      pass(blur);
+      pass(blur * 0.4);
+      renderer.setRenderTarget(null);
+      plane.visible = true;
+    },
+  };
+}
+
+const shadow = contactShadow({ width: size.x * 1.5, depth: size.z * 2.4, far: 0.55, blur: 7, opacity: 0.7 });
+scene.add(shadow.plane);
 
 /**
  * spec: { width, height, colors: {part: hex}, highlight?: part,
@@ -85,12 +122,9 @@ shoe.traverse((o) => {
  * Returns a PNG data URL with a transparent background.
  */
 window.renderStill = (spec) => {
-  for (const [name, mesh] of Object.entries(meshes)) {
-    const hex = spec.colors[name];
-    if (hex) mesh.material.color.set(hex);
-    mesh.material.emissive?.set(name === spec.highlight ? "#b9a4d6" : "#000000");
-    if (mesh.material.emissive) mesh.material.emissiveIntensity = name === spec.highlight ? 0.55 : 0;
-  }
+  SHOE_PARTS.forEach((part, i) => paint.setColor(i, spec.colors[part]));
+  paint.glow(spec.highlight ? SHOE_PARTS.indexOf(spec.highlight) : -1, spec.highlight ? 0.45 : 0);
+  shadow.update();
   renderer.setSize(spec.width, spec.height, false);
   const camera = new THREE.PerspectiveCamera(spec.fov ?? 20, spec.width / spec.height, 0.1, 100);
   camera.position.set(...spec.camera);

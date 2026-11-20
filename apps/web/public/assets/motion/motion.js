@@ -333,7 +333,7 @@ function enter() {
   if (!hero || hero.classList.contains('is-entered') || hero.classList.contains('is-entering')) return;
   // still: the picture takes its place at once (no settle); otherwise the CSS settle and fade run out first
   const done = (still = false) => { if (still) hero.classList.add('is-still'); hero.classList.add('is-entered'); };
-  const late = () => setTimeout(done, 1150);
+  const late = () => setTimeout(done, 1150 * (parseFloat(getComputedStyle(html).getPropertyValue('--m-enter-pace')) || 1));
   // the head line did not run, reduced motion, a headless shot (it sees the hero at rest, as it sees the
   // final number, unless data-motion="live") or the visitor is already below the hero (a reload half way
   // down): the hero stands as written. The safety mark has passed: motion.css is fading the words in and
@@ -345,6 +345,9 @@ function enter() {
   const media = [...hero.querySelectorAll(ENTER_MEDIA)].filter((m, i, all) => !all.some(o => o !== m && o.contains(m)));
   const steps = enterSteps(hero, h1, media);
   const EASE = 'cubic-bezier(.22, 1, .36, 1)';
+  // JIANOVA: the page can slow the whole entrance with --m-enter-pace (1 = the kit's timing)
+  const pace = Math.min(2, Math.max(1, parseFloat(getComputedStyle(html).getPropertyValue('--m-enter-pace')) || 1));
+  const ms = v => Math.round(v * pace);
   const anims = [];
   let masks = null, over = false;
   const finish = () => {
@@ -364,28 +367,28 @@ function enter() {
     // picture starts its CSS settle in the same frame
     hero.classList.add('is-entering');
     const lines = masks ? masks.lines : [[h1]];
-    const lineStep = Math.min(80, 240 / Math.max(1, lines.length - 1));
+    const lineStep = ms(Math.min(80, 240 / Math.max(1, lines.length - 1)));
     // a word starts wholly below its mask, which reaches .12em under the line: no tops show before it rises
     lines.forEach((ws, k) => ws.forEach(w => anims.push(w.animate(masks
       ? [{ transform: 'translateY(calc(100% + .2em))' }, { transform: 'none' }]
       : [{ transform: 'translateY(.35em)', opacity: 0 }, { transform: 'none', opacity: 1 }],
-      { duration: 700, delay: 80 + k * lineStep, easing: EASE, fill: 'both' }))));
+      { duration: ms(700), delay: ms(80) + k * lineStep, easing: EASE, fill: 'both' }))));
     // a line above the h1 (a notice, a pill) comes with its first line; what follows starts as its
     // last line is half way up
-    const after = 80 + (lines.length - 1) * lineStep + 220;
+    const after = ms(80) + (lines.length - 1) * lineStep + ms(220);
     let k = 0;
     steps.forEach(el => {
       const above = !!(el.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING);
       // the rise is added to whatever transform the part has of its own; the fade replaces its opacity
-      const t = { duration: 520, delay: above ? 40 : after + Math.min(k++, 6) * 60, easing: EASE, fill: 'both' };
-      anims.push(el.animate([{ opacity: 0 }, { opacity: 1 }], t), el.animate([{ transform: 'translateY(12px)' }, { transform: 'none' }], { ...t, composite: 'add' }));
+      const t = { duration: ms(520), delay: above ? ms(40) : after + Math.min(k++, 6) * ms(60), easing: EASE, fill: 'both' };
+      anims.push(el.animate([{ opacity: 0 }, { opacity: 1 }], t), el.animate([{ transform: `translateY(${Math.round(12 * pace)}px)` }, { transform: 'none' }], { ...t, composite: 'add' }));
     });
     // a panel the words sit on stands from the first paint (it was never hidden, so it never blinks);
     // the pictures settle by CSS over 1.1 s: the hero is done when both are through
-    anims.push({ finished: new Promise(r => setTimeout(r, 1150)), cancel() {} });
+    anims.push({ finished: new Promise(r => setTimeout(r, ms(1150))), cancel() {} });
     Promise.all(anims.map(a => a.finished)).then(finish, finish);
   }).catch(finish);
-  setTimeout(finish, 2400);   // whatever stalls (a hidden tab), the hero stands after 2.4 s
+  setTimeout(finish, 2400 * pace);   // whatever stalls (a hidden tab), the hero stands after 2.4 s (x pace)
 }
 
 /* ---------------------------------------------------------------- start */

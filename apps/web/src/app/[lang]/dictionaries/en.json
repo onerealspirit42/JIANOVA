@@ -6,7 +6,7 @@
     "customizeDescription": "Choose a color for each of the seven parts of the JIANOVA running shoe and turn it in 3D.",
     "brandTitle": "JIANOVA logo and colors",
     "brandDescription": "The JIANOVA star logo and its files, the brand colors and type, and how to use them.",
-    "shareAlt": "The JIANOVA running shoe in deep purple on a light ground"
+    "shareAlt": "A knit running shoe in deep purple with white laces and a white sole, on a light ground"
   },
   "common": {
     "skipToContent": "Skip to content",
@@ -40,42 +40,36 @@
       "questions": "Questions",
       "logo": "Logo and colors"
     },
-    "legal": "© 2026 JIANOVA"
+    "legal": "© 2026 JIANOVA",
+    "credit": {
+      "before": "3D shoe model: ",
+      "title": "Materials Variants Shoe",
+      "after": " © 2021 Shopify, modified, under ",
+      "license": "CC BY 4.0"
+    }
   },
   "home": {
     "hero": {
       "title": "Saudi-designed running shoes",
       "lead": "Pick a color for each part of the JIANOVA shoe, from the laces to the outsole, and turn it in 3D as you go.",
       "secondary": "See the colors",
-      "alt": "The JIANOVA running shoe from the side, deep purple with a white midsole and a dark outsole"
+      "alt": "The JIANOVA knit running shoe from the side: a deep purple upper, white laces and a white sole"
     },
     "parts": {
       "title": "7 parts of the shoe to color",
-      "lead": "The upper, tongue, laces, collar, heel, midsole and outsole each take their own color, so the details can match or stand apart.",
+      "lead": "The knit upper, laces, pull tabs, lining, heel patch, midsole and outsole each take their own color, so the details can match or stand apart.",
       "items": [
         {
-          "id": "upper",
-          "title": "Upper and tongue",
-          "text": "The two largest surfaces. Color them alike, or set the tongue apart.",
-          "alt": "The front of the shoe with a near-black upper and white laces"
-        },
-        {
           "id": "laces",
-          "title": "Laces",
-          "text": "Dark laces on a light tongue, or one color from the toe to the collar.",
-          "alt": "Laces and tongue from above: dark laces on a white tongue"
+          "title": "Laces and pull tabs",
+          "text": "Round laces through metal eyelets, and a fabric tab at the tongue and at the heel.",
+          "alt": "The laces and the tongue from above: green knit, white laces and a white tongue tab"
         },
         {
           "id": "heel",
-          "title": "Collar and heel",
-          "text": "The padded ring round the ankle and the firm counter that holds your heel.",
-          "alt": "The back of the shoe showing the purple heel and collar"
-        },
-        {
-          "id": "sole",
-          "title": "Midsole and outsole",
-          "text": "The foam layer and the rubber under it, each in a color of its own.",
-          "alt": "The sole from the side: a white midsole over an orange outsole"
+          "title": "Heel patch and lining",
+          "text": "A smooth patch on the heel, a pull tab above it, and the soft lining inside.",
+          "alt": "The back of the shoe: a white knit upper with a purple heel patch, heel tab and lining"
         }
       ]
     },
@@ -85,17 +79,17 @@
         {
           "title": "Choose a part of the shoe",
           "text": "Select it in the list or tap it on the shoe. The part glows for a moment, so you can see which one you are changing.",
-          "alt": "The shoe with its laces lit up, the part being changed"
+          "alt": "The shoe with its laces lit up: the part being changed"
         },
         {
           "title": "Color the shoe part you chose",
           "text": "The shoe changes as soon as you choose, with a short fade from the old color to the new one.",
-          "alt": "The shoe with orange laces, collar and heel"
+          "alt": "The shoe with orange laces, pull tabs and heel patch"
         },
         {
           "title": "Turn the shoe and look closer",
           "text": "Drag to turn the shoe, or use the buttons and the keyboard. Zoom in to see where two colors meet.",
-          "alt": "The same shoe from behind, showing the orange heel"
+          "alt": "The same shoe from behind, showing the orange heel patch and heel tab"
         }
       ]
     },
@@ -121,7 +115,7 @@
         },
         {
           "q": "Is the shoe on this site the final design?",
-          "a": "No. It is a simplified model, there so you can try the designer. The final shoe will replace it once its design is done."
+          "a": "No. It is a stand-in: a 3D model of a knit running shoe, used under licence so you can try the designer. The final JIANOVA shoe will replace it when its design is done."
         },
         {
           "q": "Can I save my shoe design?",
@@ -253,7 +247,7 @@
   "configurator": {
     "title": "Design your pair",
     "intro": "Choose a part, then a color. Changes appear on the shoe right away.",
-    "placeholderNote": "The shoe here is a simplified model for trying the designer. The final JIANOVA shoe is still in design.",
+    "modelNote": "The shoe here is a stand-in model for trying the designer. The final JIANOVA shoe is still in design.",
     "partsLegend": "Part",
     "colorsLegend": "Color for {part}",
     "reset": "Reset to original colors",
@@ -274,10 +268,10 @@
     },
     "parts": {
       "upper": "Upper",
-      "tongue": "Tongue",
+      "tabs": "Pull tabs",
       "laces": "Laces",
-      "collar": "Collar",
-      "heel": "Heel",
+      "lining": "Lining",
+      "heel": "Heel patch",
       "midsole": "Midsole",
       "outsole": "Outsole"
     },
