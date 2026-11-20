@@ -1,9 +1,25 @@
 # Deployment
 
-## CranL (planned host)
+## CranL (live)
 
-[CranL](https://cranl.com) builds the site from this repository with the
-`Dockerfile` at the root and runs Next.js's standalone server on port 3000.
+The site is live at **https://jianova-shypa8.cranl.net** (first deployed on
+20 November 2026, commit `24ffd37`). [CranL](https://cranl.com) builds it from
+this repository with the `Dockerfile` at the root and runs Next.js's
+standalone server on port 3000.
+
+The app: project `Jianova`, application `jianova`, web service, source
+"Public Repository" (`https://github.com/onerealspirit42/JIANOVA.git`,
+branch `main`, root `/`), Dockerfile build, port 3000, region Netherlands 1
+(Free plan).
+
+**Updating the site:** with a public-repository source, a push to `main` does
+not deploy by itself. Open the app on the CranL dashboard and press
+**Redeploy**. To deploy on every push, connect the GitHub account to CranL
+(GitHub connections) and switch the source to the connected repository.
+
+Verified on the live address: every page in both languages answers 200, a
+missing page 404, the logo files and images load, and the 3D designer renders
+with WebGL and opens a shared design from its link (`?d=`).
 
 What is in the repository:
 
@@ -16,19 +32,13 @@ What is in the repository:
 - `apps/web/next.config.ts` – `output: "standalone"` with the workspace root as
   the tracing root.
 
-Verified: the standalone server, copied on its own with the same layout as
-the image, serves every page and passes the browser test suites. The Docker
-image itself has not been built here (this environment cannot reach Docker
-Hub); CranL builds it on its side.
+### How the first deploy was made (dashboard)
 
-### First deploy (dashboard)
-
-1. Create an account at cranl.com (the Free plan needs no card).
-2. Create an app from GitHub, connect the GitHub account and choose
-   `onerealspirit42/JIANOVA`, branch `main`.
-3. Choose the Dockerfile build and port 3000.
-4. Deploy. The site gets a `*.cranl.net` address; every push to `main`
-   deploys again.
+1. Sign in at app.cranl.com (the Free plan needs no card).
+2. New application, then Git Repository.
+3. Name `jianova`, Web service, Public Repository with the repository URL
+   above, branch `main`, port 3000, build type Dockerfile (path `Dockerfile`).
+4. Create Application. The site gets a `*.cranl.net` address with SSL.
 
 Plan notes (from cranl.com, November 2026): a custom domain needs the Basic
 plan or above; the Riyadh and Jeddah regions need Pro or above. The Free plan

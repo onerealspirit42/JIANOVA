@@ -71,9 +71,11 @@ the home page shows the real shoe.
 
 ## Deployment
 
-The site is prepared for [CranL](https://cranl.com): a root `Dockerfile` builds a
-standalone Next.js server, and `cranl.json` describes the app. Steps and notes
-are in [`docs/deployment.md`](docs/deployment.md).
+The site is live on [CranL](https://cranl.com) at
+**https://jianova-shypa8.cranl.net**. A root `Dockerfile` builds a standalone
+Next.js server, and `cranl.json` describes the app. After a push to `main`,
+press Redeploy on the CranL dashboard. Steps and notes are in
+[`docs/deployment.md`](docs/deployment.md).
 
 ## Design
 
