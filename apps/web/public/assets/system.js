@@ -524,6 +524,17 @@ function pictures() {
   let broken = 0;
   const fail = img => {
     if (img.dataset.broken != null) return;
+    // asked for once more first (a host that timed out answers the second time), at the size chosen
+    const url = img.currentSrc || img.src;
+    if (img.dataset.retried == null && url && !url.startsWith('data:')) {
+      img.dataset.retried = '';
+      setTimeout(() => {
+        img.addEventListener('error', () => fail(img), { once: true });
+        img.srcset = '';
+        img.src = url + (url.includes('?') ? '&' : '?') + 'retry=1';
+      }, 1500);
+      return;
+    }
     img.dataset.broken = '';
     img.setAttribute('data-placeholder', '');
     html.dataset.broken = String(++broken);
@@ -577,7 +588,13 @@ function guards() {
    holds a [data-moment]; data-ready waits for them. mount is idempotent, so nothing mounts twice. */
 async function moments() {
   if (!document.querySelector('[data-moment]')) return;
-  const m = await import(new URL('moments/moments.js', HERE).href);
+  // a load that fails (a host that timed out) is tried twice more, each time under a fresh address:
+  // a browser keeps a failed module, so the same address would fail again without asking
+  let m;
+  for (let attempt = 0; ; attempt++) {
+    try { m = await import(new URL(`moments/moments.js${attempt ? `?retry=${attempt}` : ''}`, HERE).href); break; }
+    catch (e) { if (attempt >= 2) throw e; await new Promise(r => setTimeout(r, 1500 * (attempt + 1))); }
+  }
   await m.ready;
 }
 

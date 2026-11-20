@@ -17,6 +17,16 @@ not deploy by itself. Open the app on the CranL dashboard and press
 **Redeploy**. To deploy on every push, connect the GitHub account to CranL
 (GitHub connections) and switch the source to the connected repository.
 
+**Then clear the edge cache:** once the deploy is done, press **Purge Cache**
+(the CDN box on the app's Overview). The files in `public/` (the kit's scripts
+and styles, the pictures, the model) keep their names when they change, and
+CranL's edge holds them until the cache is cleared (`next.config.ts` sends
+`s-maxage` for them), so they load from the edge rather than from the server,
+which on the Free plan can be asleep and slow to answer. Before this, a visit
+that found the server asleep got a timeout (504) for some files, and the page
+lost its motion. Then open the home page once in each language, scrolling to
+the end, so the edge holds every file again.
+
 Verified on the live address: every page in both languages answers 200, a
 missing page 404, the logo files and images load, and the 3D designer renders
 with WebGL and opens a shared design from its link (`?d=`).

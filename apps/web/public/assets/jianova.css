@@ -121,6 +121,8 @@ main #steps[data-moment].is-live > .mo-pc__grid { align-content: start; padding-
   #parts .part-frame { aspect-ratio: 4 / 3; margin-inline: calc(-1 * var(--gut)); border-radius: 0; }
   #colors .color-frame { order: -1; aspect-ratio: 4 / 3; margin-inline: calc(-1 * var(--gut)); margin-bottom: var(--s-4); border-radius: 0; }
   main > #steps[data-moment]:not(.is-live) { min-height: 0; }
+  /* the statement, when it does not hold (reduced motion, or its script did not load), is as tall as its words */
+  main > #idea[data-moment]:not(.is-pinned) { min-height: 0; }
 }
 
 /* ------------------------------------------------------- refinements */

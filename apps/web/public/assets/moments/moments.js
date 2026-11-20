@@ -25,7 +25,9 @@
     <script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
     <link rel="modulepreload" href="assets/moments/moments.js"><link rel="modulepreload" href="assets/moments/lib.js">
 */
-import * as lib from './lib.js';
+// lib.js under this file's own query: when system.js retries a failed load as moments.js?retry=n,
+// lib.js is asked for again too (a browser keeps a failed module under its address)
+const lib = await import(new URL(`./lib.js${new URL(import.meta.url).search}`, import.meta.url).href);
 
 const BASE = new URL('./', import.meta.url);
 const html = document.documentElement;

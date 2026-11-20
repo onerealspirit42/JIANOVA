@@ -185,6 +185,7 @@ export function TurnHero(props: TurnHeroProps) {
     }
     let next = 0;
     let started = false;
+    const retried = new Set<number>();
     const small = window.innerWidth < 640;
     const loadNext = () => {
       if (next >= order.length) return;
@@ -200,7 +201,15 @@ export function TurnHero(props: TurnHeroProps) {
         request();
         loadNext();
       };
-      img.decode().then(done, () => (img.complete && img.naturalWidth ? done() : loadNext()));
+      img.decode().then(done, () => {
+        if (img.complete && img.naturalWidth) return done();
+        // a frame that failed (a host that timed out) is asked for once more, after the rest
+        if (!retried.has(i)) {
+          retried.add(i);
+          order.push(i);
+        }
+        loadNext();
+      });
     };
     const startLoading = () => {
       if (started) return;
