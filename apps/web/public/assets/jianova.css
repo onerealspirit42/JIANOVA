@@ -152,14 +152,15 @@ html[lang="ar"] .hero h1 { line-height: 1.2; }
 
 /* ------------------------------------------------------------- motion
    Quiet luxury moves slowly and lands softly: the kit's timings, eased out
-   with a long tail (no bounce, nothing past its mark), a little longer than a
-   product tool's. Hover and press still answer at once; only the settling is
-   longer. Reduced motion keeps the kit's own rules (colour changes only). */
+   with a long tail (no bounce, nothing past its mark). Hovers and presses
+   still answer within a fifth of a second; entrances, pictures and panels
+   settle more slowly. Reduced motion keeps the kit's own rules (colour
+   changes only). In-page links glide to their section (KitScripts.tsx). */
 :root {
   --ease: cubic-bezier(.22, 1, .36, 1);
   --dur: 260ms;
-  --m-in: 240ms;
-  --m-out: 360ms;
+  --m-in: 180ms;
+  --m-out: 220ms;
   --m-press: 140ms;
   --m-panel: 320ms;
   --m-close: 220ms;
@@ -171,10 +172,6 @@ html[lang="ar"] .hero h1 { line-height: 1.2; }
   --m-enter-pace: 1.45;
 }
 
-/* In-page links glide to their section instead of jumping. */
-@media (prefers-reduced-motion: no-preference) {
-  html { scroll-behavior: smooth; }
-}
 
 /* Steps: the pictures cross-fade and settle more slowly, the text opens softly.
    (The moment's own CSS loads after this file, hence #steps.) */

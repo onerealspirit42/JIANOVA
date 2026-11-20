@@ -59,16 +59,16 @@ export function applyShoeMaterial(mesh) {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = shader.vertexShader
       .replace(
-        "#include <common>",
-        `#include <common>
-attribute float _part;
+        "void main() {",
+        `attribute float _part;
 uniform vec3 uPartColor[${SHOE_PARTS.length}];
 uniform float uPartSheen[${SHOE_PARTS.length}];
 uniform int uGlowPart;
 uniform float uGlow;
 varying vec3 vPartColor;
 varying float vPartSheen;
-varying float vPartGlow;`,
+varying float vPartGlow;
+void main() {`,
       )
       .replace(
         "#include <begin_vertex>",
@@ -80,13 +80,13 @@ vPartGlow = partIndex == uGlowPart ? uGlow : 0.0;`,
       );
     shader.fragmentShader = shader.fragmentShader
       .replace(
-        "#include <common>",
-        `#include <common>
-uniform vec3 uGlowColor;
+        "void main() {",
+        `uniform vec3 uGlowColor;
 uniform float uSheenTint;
 varying vec3 vPartColor;
 varying float vPartSheen;
-varying float vPartGlow;`,
+varying float vPartGlow;
+void main() {`,
       )
       .replace(
         "#include <map_fragment>",

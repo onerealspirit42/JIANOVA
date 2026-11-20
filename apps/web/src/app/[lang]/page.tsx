@@ -72,7 +72,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                   srcSet="/images/shoe/hero-sm.webp 1200w, /images/shoe/hero.webp 2400w"
                   sizes="(min-width: 1440px) 1280px, 100vw"
                   width={2400}
-                  height={1311}
+                  height={1346}
                   alt={t.hero.alt}
                   fetchPriority="high"
                 />
