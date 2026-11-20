@@ -143,3 +143,9 @@ a, button, label, input, summary { touch-action: manipulation; }
 
 /* Phone: the designer screenshot a little larger, so the questions fill their two screens. */
 @media (max-width: 639px) { .phone-shot { width: 240px; } }
+
+/* Arabic: the hero headline on tighter lines (Naskh at display size stays clear at 1.2), so the shoe
+   below keeps the size it has in English; and on phones the designer screenshot a little larger, as
+   the Arabic answers run shorter and would leave the questions' second screen half empty. */
+html[lang="ar"] .hero h1 { line-height: 1.2; }
+@media (max-width: 639px) { html[lang="ar"] .phone-shot { width: 272px; } }
