@@ -156,17 +156,13 @@ html[lang="ar"] .hero h1 { line-height: 1.2; font-size: calc(var(--ly-h1) * .9);
 @media (max-width: 639px) { html[lang="ar"] .phone-shot { width: 288px; } }
 
 /* ------------------------------------------------------------- motion
-   Quiet luxury moves slowly and lands softly: the kit's timings, eased out
-   with a long tail (no bounce, nothing past its mark). Hovers and presses
-   still answer within a fifth of a second; entrances, pictures and panels
-   settle more slowly. Reduced motion keeps the kit's own rules (colour
+   Quiet luxury moves slowly and lands softly: entrances, pictures, panels
+   and the moments ease out with a long tail (no bounce, nothing past its
+   mark). Hovers and presses keep the kit's quick timing, so the page answers
+   at once. Reduced motion keeps the kit's own rules (colour
    changes only). In-page links glide to their section (KitScripts.tsx). */
 :root {
-  --ease: cubic-bezier(.22, 1, .36, 1);
-  --dur: 260ms;
-  --m-in: 150ms;
-  --m-out: 150ms;
-  --m-press: 140ms;
+  --lux-ease: cubic-bezier(.22, 1, .36, 1);
   --m-panel: 320ms;
   --m-close: 220ms;
   --m-slide: 420ms;
@@ -182,16 +178,16 @@ html[lang="ar"] .hero h1 { line-height: 1.2; font-size: calc(var(--ly-h1) * .9);
    (The moment's own CSS loads after this file, hence #steps.) */
 @media (prefers-reduced-motion: no-preference) {
   #steps[data-moment="pinned-chapters"].is-live .mo-pc__visual {
-    transition: opacity 900ms var(--ease), transform 1600ms var(--m-ease-enter);
+    transition: opacity 900ms var(--lux-ease), transform 1600ms var(--m-ease-enter);
   }
   #steps[data-moment="pinned-chapters"].is-live .mo-pc__step p {
-    transition: grid-template-rows 700ms var(--ease), opacity 600ms var(--ease);
+    transition: grid-template-rows 700ms var(--lux-ease), opacity 600ms var(--lux-ease);
   }
   #steps[data-moment="pinned-chapters"].is-live :is(.mo-pc__step, .mo-pc__step h3) {
-    transition: border-color 600ms var(--ease), color 600ms var(--ease);
+    transition: border-color 600ms var(--lux-ease), color 600ms var(--lux-ease);
   }
   /* The statement: each word lights up gently as it is read. */
-  #idea .mo-wh .mo-w { transition: color 520ms var(--ease); }
+  #idea .mo-wh .mo-w { transition: color 520ms var(--lux-ease); }
 }
 
 /* Colours: the new colourway fades in over the one before (ColorPicker.tsx). */
@@ -201,7 +197,7 @@ html[lang="ar"] .hero h1 { line-height: 1.2; font-size: calc(var(--ly-h1) * .9);
 .color-frame img.is-under { opacity: 1; z-index: 1; }
 .color-frame img.is-on { opacity: 1; z-index: 2; }
 @media (prefers-reduced-motion: no-preference) {
-  .color-frame img.is-on { transition: opacity 800ms var(--ease); }
+  .color-frame img.is-on { transition: opacity 800ms var(--lux-ease); }
   @starting-style { .color-frame img.is-on { opacity: 0; } }
 }
 
