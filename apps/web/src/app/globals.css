@@ -25,8 +25,8 @@
   --color-ink-500: #6b6575;
 
   /* The same faces as the kit: Instrument, with the Arabic partners. */
-  --font-sans: "Instrument Sans", "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --font-display: "Instrument Serif", "Noto Naskh Arabic", Georgia, serif;
+  --font-sans: "Instrument Sans", "Instrument Sans Fallback", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-display: "Instrument Serif", "Instrument Serif Fallback", "Noto Naskh Arabic", Georgia, serif;
 }
 
 /*
@@ -45,20 +45,11 @@
 
 /*
  * The kit's base rules (button { color: inherit; font: inherit }) sit outside
- * any CSS layer, so they beat Tailwind's utilities: restate what the
- * designer's buttons need.
+ * any CSS layer, so they beat Tailwind's utilities: restate what the stage's
+ * buttons need. (The designer's panel is styled in public/assets/jianova.css.)
  */
 .designer-stage button {
   color: #fff;
-}
-.designer section button {
-  font-size: 0.875rem;
-}
-
-/* The kit sets every h1 to the hero size; the designer's title is smaller. */
-.designer h1 {
-  font: 400 clamp(30px, 2.6vw, 38px) / 1.15 var(--font-display);
-  letter-spacing: -0.01em;
 }
 
 @media (prefers-reduced-motion: reduce) {

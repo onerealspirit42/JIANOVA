@@ -5,15 +5,15 @@
  * --ink #1c1029 --accent #241039 --surface #f2eff6 --type instrument-serif
  * --radius soft), kept as printed. Royal purple #241039 is the brand colour
  * from the JIANOVA brief, so it stays even though the kit avoids violet.
- * Font names point at the self-hosted faces, with the Arabic partners.
+ * Font names point at the self-hosted faces (fonts.css), with the Arabic partners.
  */
 :root {
   --p-bg: #faf9fb; --p-surface: #f2eff6; --p-ink: #1c1029; --p-muted: #6f677a;
   --p-accent: #241039; --p-accent-ink: #faf9fb; --p-action: #241039; --p-action-ink: #faf9fb;
   --p-inv-bg: #1c1029; --p-inv-surface: #291d36; --p-inv-ink: #faf9fb; --p-inv-muted: #9d97a5;
   --p-inv-accent: #faf9fb; --p-inv-accent-ink: #1c1029; --p-inv-action: #faf9fb; --p-inv-action-ink: #1c1029;
-  --font-display: "Instrument Serif", "Noto Naskh Arabic", Georgia, serif;
-  --font-text: "Instrument Sans", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-display: "Instrument Serif", "Instrument Serif Fallback", "Noto Naskh Arabic", Georgia, serif;
+  --font-text: "Instrument Sans", "Instrument Sans Fallback", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --display-weight: 400;
   --display-tracking: -0.012em;
   --display-tracking-xl: -0.016em;
@@ -66,18 +66,14 @@ html[lang="ar"] body { line-height: 1.75; }
 .logo-frame--dark { background: var(--p-accent); color: var(--p-accent-ink); }
 .logo-frame svg { width: 62%; height: auto; max-height: 64%; }
 .logo-frame--icon svg { width: auto; height: 40%; }
-.diagram-frame { display: grid; place-items: center; aspect-ratio: 5 / 4; padding: 6%; border-radius: var(--r-lg); background: var(--p-surface); color: var(--p-accent); }
-.diagram-frame .brand-diagram { width: 100%; height: auto; }
+/* Each file's downloads, one under the other (a pair on one line wraps badly in Arabic). */
+.tile__links { display: grid; justify-items: start; gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
 /* Meaning: the star large on the quiet ground, no panel (no grey on grey). */
 .meaning-frame { display: grid; place-items: center; align-self: center; color: var(--p-accent); }
 .meaning-frame .brand-diagram { width: min(100%, 520px); height: auto; }
 #use .rows > li { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
 #use .rows__value { text-align: start; white-space: normal; }
 .color-chip { display: inline-block; width: 20px; height: 20px; border-radius: 6px; vertical-align: -4px; margin-inline-end: var(--s-2); box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 40%, transparent); }
-
-/* ------------------------------------------------------------ designer */
-/* The configurator sits under the fixed bar. */
-.designer { padding-top: var(--nav); min-height: 100svh; display: flex; flex-direction: column; }
 
 /* Arabic: the steps' marker line sits on the reading side (the kit draws it on the left). */
 [dir="rtl"] [data-moment="pinned-chapters"].is-live .mo-pc__step { padding-left: 0; padding-right: var(--s-5); border-left: 0; border-right: 2px solid var(--line); transition: border-color 300ms ease; }
@@ -210,3 +206,105 @@ html[dir="rtl"]:not([data-motion="off"]) :is(.btn--arrow, .link):focus-visible::
 }
 html[dir="rtl"]:not([data-motion="off"]) .link,
 html[dir="rtl"]:not([data-motion="off"]) .link:is(:hover, :focus-visible) { background-position: 100% 100%, 100% 100%; }
+
+/* ------------------------------------------------------------ designer
+   The 3D designer: the stage and a panel built from the site's own parts
+   (the .swatch chips of the home page's colours, the .btn pair), so it reads
+   as the same site. The stage stays in view while the panel scrolls: beside
+   it on a wide screen, above it on a phone, so a colour change is always seen. */
+.designer { padding-top: var(--nav); min-height: 100svh; display: flex; flex-direction: column; }
+.designer__layout { display: grid; flex: 1; grid-template-columns: minmax(0, 1fr); }
+.designer__stage { position: sticky; top: var(--nav); z-index: 2; height: 46svh; min-height: 300px; }
+.designer__hint { position: absolute; inset-inline: 0; bottom: var(--s-4); margin: 0; padding-inline: var(--s-6); text-align: center; font-size: 13px; line-height: 1.45; color: color-mix(in oklab, #fff 70%, transparent); text-wrap: balance; pointer-events: none; }
+.designer__panel { display: grid; align-content: start; gap: var(--s-6); padding: var(--s-7) var(--gut) calc(var(--s-8) + env(safe-area-inset-bottom)); background: var(--p-bg); color: var(--p-ink); }
+.designer__head { display: grid; gap: var(--s-3); }
+.designer__head h1 { font: var(--display-weight) clamp(32px, 2.4vw, 40px) / 1.12 var(--font-display); letter-spacing: var(--display-tracking); }
+.designer__head p { color: var(--muted); max-width: 42ch; }
+.designer__note { margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); background: var(--p-surface); font-size: 14px; line-height: 1.55; color: var(--p-ink); }
+.designer .swatches legend { margin-bottom: var(--s-3); }
+.designer__actions { margin-top: var(--s-1); }
+.designer__actions .btn--secondary:disabled { color: var(--muted); text-decoration-color: transparent; cursor: default; }
+.designer__status { min-height: 1.6em; margin: calc(-1 * var(--s-3)) 0 0; font-size: 14px; color: var(--muted); }
+.designer__undo { margin-inline-start: var(--s-1); padding: 0; border: 0; background: none; font: inherit; font-weight: 500; color: var(--p-ink); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; cursor: pointer; transition: text-decoration-color var(--m-in, 150ms) var(--m-ease, ease); }
+.designer__undo:hover { text-decoration-color: currentColor; }
+/* The shoe can be taken hold of: a hand to grab, a closed hand while turning (a part shows a pointer). */
+.designer__stage canvas { cursor: grab; }
+.designer__stage canvas:active { cursor: grabbing; }
+/* Each part's chip shows its colour now; the dot fades with the shoe (0.75 s). */
+.designer__parts .swatch__dot { transition: background-color 700ms var(--lux-ease); }
+@media (min-width: 640px) and (max-width: 1023px) {
+  .designer .swatches { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .designer__layout { grid-template-columns: minmax(0, 1fr) 420px; }
+  .designer__stage { height: calc(100svh - var(--nav)); }
+  /* Tighter on a wide screen, so the whole panel fits beside the shoe at 900px tall. */
+  .designer__panel { gap: var(--s-5); padding: var(--s-6) var(--s-7) var(--s-7); border-inline-start: 1px solid var(--line); }
+  .designer .swatch { min-height: 44px; }
+}
+/* Keyboard focus never lands under the stage that stays at the top of a phone. */
+@media (max-width: 1023px) {
+  html:has(.designer) { scroll-padding-top: calc(var(--nav) + max(46svh, 300px) + var(--s-4)); }
+}
+
+/* ---------------------------------------------------------- consistency */
+/* One button face across the site: the big closing button in the text face,
+   as every other button (the kit sets it in the display face on wide screens only). */
+.btn--xl { font: 500 clamp(18px, 0.4vw + 14px, 20px) / 1 var(--font-text); letter-spacing: 0; }
+/* A chip presses like a button. */
+html:not([data-motion="off"]) .swatch { transition: border-color var(--m-out, 120ms) var(--m-ease, ease), background-color var(--m-out, 120ms) var(--m-ease, ease), transform var(--m-press, 90ms) var(--m-ease, ease); }
+html:not([data-motion="off"]) .swatch:active { transform: scale(.985); }
+/* The section on screen: its word in the bar keeps the hover line (KitScripts.tsx), so the
+   line travels from word to word as the page scrolls. */
+.nav__link[aria-current="location"]::before { transform: scaleX(1); transform-origin: left; }
+/* "Saudi-designed" lives only here, at the foot of every page: a quiet line in the text face. */
+.footer__lede { font: 400 15px / 1.5 var(--font-text); letter-spacing: 0; color: var(--muted); }
+/* Text drawn the same on every Mac screen: the light-on-purple bands stay crisp. */
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* ------------------------------------------------------- page motion
+   Moving between pages: the old page fades out and the new one rises softly
+   in (cross-document view transitions; browsers without them just load the
+   page). The bar is the same on every page, so it stays still. */
+@view-transition { navigation: auto; }
+.nav { view-transition-name: site-nav; }
+::view-transition-group(site-nav) { animation: none; }
+::view-transition-old(site-nav) { display: none; }
+::view-transition-new(site-nav) { animation: none; }
+::view-transition-old(root) { animation: 260ms var(--m-ease-enter) both jv-page-out; }
+::view-transition-new(root) { animation: 640ms var(--lux-ease) 60ms both jv-page-in; }
+@keyframes jv-page-out { to { opacity: 0; } }
+@keyframes jv-page-in { from { opacity: 0; translate: 0 12px; } }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+}
+
+/* Below the first screen, each block settles into place as it comes into
+   view: a short rise and a fade, once (KitScripts.tsx marks the blocks that
+   start off screen with .rv and adds .is-in on arrival). The hero has its
+   own entrance and the two moments their own motion; reduced motion, print
+   and pages without script show everything at rest. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Out of sight at once (no transition on the way out), then the arrival eases in. */
+  html:not([data-motion="off"]) .rv { opacity: 0; translate: 0 28px; }
+  html:not([data-motion="off"]) .rv.is-in {
+    opacity: 1; translate: none;
+    transition: opacity 1000ms var(--lux-ease) var(--rv-delay, 0ms), translate 1200ms var(--lux-ease) var(--rv-delay, 0ms);
+  }
+  /* Pictures fade in as they arrive instead of appearing line by line. */
+  html:not([data-motion="off"]) img.is-loading { opacity: 0; }
+  html:not([data-motion="off"]) img.is-arrived { transition: opacity 900ms var(--lux-ease); }
+}
+@media print {
+  .rv, img.is-loading { opacity: 1 !important; translate: none !important; }
+}
+
+/* The designer's panel opens in a soft cascade as the page arrives. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="off"]) .designer__panel > * { animation: jv-rise 900ms var(--lux-ease) both; }
+  html:not([data-motion="off"]) .designer__panel > :nth-child(2) { animation-delay: 70ms; }
+  html:not([data-motion="off"]) .designer__panel > :nth-child(3) { animation-delay: 140ms; }
+  html:not([data-motion="off"]) .designer__panel > :nth-child(4) { animation-delay: 210ms; }
+  html:not([data-motion="off"]) .designer__panel > :nth-child(n + 5) { animation-delay: 280ms; }
+}
+@keyframes jv-rise { from { opacity: 0; translate: 0 14px; } }

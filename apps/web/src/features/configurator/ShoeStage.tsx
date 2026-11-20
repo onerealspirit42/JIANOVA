@@ -54,6 +54,9 @@ export type ShoeStageProps = {
   autoRotate?: boolean;
   highlightPart?: PartId;
   highlightTick?: number;
+  /** Part to turn the camera to; each change of `focusTick` starts the glide. */
+  focusPart?: PartId;
+  focusTick?: number;
   onSelectPart?: (part: PartId) => void;
   /** Accessible description of what the 3D view shows. */
   label: string;
@@ -67,11 +70,41 @@ const FIT_HEIGHT = 1.46 * 2.05;
 const VIEW_DIRECTION = new THREE.Vector3(0.62, 0.3, 0.72).normalize();
 const TARGET = new THREE.Vector3(0, 0.05, 0);
 
+/**
+ * Where the camera looks from to show each part: directions from the shoe's
+ * centre (the toe points along +X, the outer side faces +Z, Y is up).
+ */
+const PART_VIEWS: Record<PartId, THREE.Vector3> = {
+  upper: VIEW_DIRECTION,
+  tabs: new THREE.Vector3(-0.5, 0.45, 0.74).normalize(),
+  laces: new THREE.Vector3(0.42, 0.74, 0.53).normalize(),
+  lining: new THREE.Vector3(-0.36, 0.86, 0.36).normalize(),
+  heel: new THREE.Vector3(-0.9, 0.24, 0.36).normalize(),
+  midsole: new THREE.Vector3(0.12, 0.1, 0.99).normalize(),
+  outsole: new THREE.Vector3(0.3, -0.62, 0.72).normalize(),
+};
+
+/**
+ * How far over and under the shoe the camera may go (OrbitControls limits):
+ * not straight down or up, but low enough to see the outsole from below.
+ */
+const MIN_POLAR = 0.25;
+const MAX_POLAR = Math.PI - 0.5;
+
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
 /**
+ * The time a frame advances an animation by. The view renders on demand, so
+ * the first frame of a move reports the whole pause before it as its delta:
+ * that frame advances by one display frame at most, and the frames after it
+ * (`running`) by their real time, capped so a stalled frame skips little.
+ */
+const frameStep = (running: boolean, delta: number) => Math.min(delta, running ? 0.25 : 1 / 60);
+
+/**
  * Places the camera so the whole shoe fits the canvas, whatever its shape:
- * wide desktop panels and narrow phone screens alike. Runs on resize. With
+ * wide desktop panels and narrow phone screens alike. Runs on resize, keeping
+ * the angle and zoom the user chose. With
  * `intro`, the camera first glides in from a little further away, once, and
  * stops as soon as the user takes hold of the view.
  */
@@ -82,6 +115,9 @@ function FitCamera({ intro }: { intro: boolean }) {
   const controls = useThree((s) => s.controls) as unknown as (Controls & THREE.EventDispatcher<{ start: object }>) | null;
   const dolly = useRef<{ from: number; to: number; t: number } | null>(null);
   const introDone = useRef(false);
+  // The distance that fitted the last size: a resize scales the view by the
+  // change, so turning a phone or resizing the window keeps the angle and zoom.
+  const fitted = useRef(0);
 
   useEffect(() => {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
@@ -89,18 +125,29 @@ function FitCamera({ intro }: { intro: boolean }) {
     const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     const tanH = tanV * aspect;
     const distance = Math.max(FIT_WIDTH / 2 / tanH, FIT_HEIGHT / 2 / tanV);
-    let start = distance;
+    const target = controls?.target ?? TARGET;
     if (intro && !introDone.current) {
       introDone.current = true;
-      start = distance * 1.14;
+      const start = distance * 1.14;
       dolly.current = { from: start, to: distance, t: 0 };
+      camera.position.copy(target).addScaledVector(VIEW_DIRECTION, start);
+    } else if (fitted.current > 0) {
+      const offset = camera.position.clone().sub(target);
+      const scale = distance / fitted.current;
+      if (dolly.current) {
+        dolly.current.from *= scale;
+        dolly.current.to *= scale;
+      }
+      offset.setLength(THREE.MathUtils.clamp(offset.length() * scale, MIN_DISTANCE, MAX_DISTANCE));
+      camera.position.copy(target).add(offset);
     } else {
-      dolly.current = null;
+      camera.position.copy(target).addScaledVector(VIEW_DIRECTION, distance);
     }
-    camera.position.copy(TARGET).addScaledVector(VIEW_DIRECTION, start);
-    camera.lookAt(TARGET);
+    fitted.current = distance;
+    camera.lookAt(target);
+    controls?.update();
     invalidate();
-  }, [camera, size.width, size.height, invalidate, intro]);
+  }, [camera, size.width, size.height, invalidate, intro, controls]);
 
   useEffect(() => {
     if (!controls) return;
@@ -111,10 +158,15 @@ function FitCamera({ intro }: { intro: boolean }) {
     return () => controls.removeEventListener("start", stop);
   }, [controls]);
 
+  const dollying = useRef(false);
   useFrame((_, delta) => {
     const d = dolly.current;
-    if (!d) return;
-    d.t = Math.min(1, d.t + delta / 2.2);
+    if (!d) {
+      dollying.current = false;
+      return;
+    }
+    d.t = Math.min(1, d.t + frameStep(dollying.current, delta) / 2.2);
+    dollying.current = true;
     const target = controls?.target ?? TARGET;
     const offset = camera.position.clone().sub(target);
     offset.setLength(d.from + (d.to - d.from) * easeOutCubic(d.t));
@@ -150,18 +202,49 @@ const MAX_DISTANCE = 14;
 function ViewDriver({
   commandsRef,
   reducedMotion,
+  focusPart,
+  focusTick = 0,
 }: {
   commandsRef: { current: ViewCommands | null };
   reducedMotion: boolean;
+  focusPart?: PartId;
+  focusTick?: number;
 }) {
   const camera = useThree((s) => s.camera);
-  const controls = useThree((s) => s.controls) as unknown as Controls | null;
+  const controls = useThree((s) => s.controls) as unknown as (Controls & THREE.EventDispatcher<{ start: object }>) | null;
   const invalidate = useThree((s) => s.invalidate);
   const pending = useRef({ angle: 0, logZoom: 0 });
+  // The direction the camera is gliding to (a part's view), or null.
+  const aim = useRef<THREE.Spherical | null>(null);
+
+  // A part chosen in the panel (a new focusTick): turn round to it, from
+  // wherever the view is. A part tapped on the shoe changes focusPart alone
+  // and is already in view, so the camera stays.
+  const lastTick = useRef(focusTick);
+  useEffect(() => {
+    if (focusTick === lastTick.current || !focusPart) return;
+    lastTick.current = focusTick;
+    const next = new THREE.Spherical().setFromVector3(PART_VIEWS[focusPart]);
+    next.phi = THREE.MathUtils.clamp(next.phi, MIN_POLAR, MAX_POLAR);
+    aim.current = next;
+    pending.current.angle = 0;
+    invalidate();
+  }, [focusTick, focusPart, invalidate]);
+
+  // Taking hold of the view (drag, pinch, wheel) stops the glide at once.
+  useEffect(() => {
+    if (!controls) return;
+    const stop = () => {
+      aim.current = null;
+    };
+    controls.addEventListener("start", stop);
+    return () => controls.removeEventListener("start", stop);
+  }, [controls]);
 
   useEffect(() => {
     commandsRef.current = {
       turn: (radians) => {
+        aim.current = null;
         pending.current.angle += radians;
         invalidate();
       },
@@ -175,7 +258,28 @@ function ViewDriver({
     };
   }, [commandsRef, invalidate]);
 
-  useFrame((_, delta) => {
+  const running = useRef(false);
+  useFrame((_, rawDelta) => {
+    const delta = frameStep(running.current, rawDelta);
+    running.current = aim.current !== null || pending.current.angle !== 0 || pending.current.logZoom !== 0;
+    const a = aim.current;
+    if (a) {
+      // Ease the angles toward the part's view (the shorter way round), keeping the zoom.
+      const target = controls?.target ?? TARGET;
+      const offset = camera.position.clone().sub(target);
+      const now = new THREE.Spherical().setFromVector3(offset);
+      const dTheta = Math.atan2(Math.sin(a.theta - now.theta), Math.cos(a.theta - now.theta));
+      const dPhi = a.phi - now.phi;
+      const k = reducedMotion ? 1 : 1 - Math.exp(-delta * 3.2);
+      now.theta += dTheta * k;
+      now.phi = THREE.MathUtils.clamp(now.phi + dPhi * k, MIN_POLAR, MAX_POLAR);
+      offset.setFromSpherical(now);
+      camera.position.copy(target).add(offset);
+      camera.lookAt(target);
+      controls?.update();
+      if (Math.abs(dTheta) < 2e-3 && Math.abs(dPhi) < 2e-3) aim.current = null;
+      invalidate();
+    }
     const p = pending.current;
     if (Math.abs(p.angle) < 1e-4 && Math.abs(p.logZoom) < 1e-4) {
       p.angle = 0;
@@ -227,7 +331,10 @@ function Turntable({
   const speed = useRef(0);
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => invalidate(), [active, invalidate]);
-  useFrame((_, delta) => {
+  const running = useRef(false);
+  useFrame((_, rawDelta) => {
+    const delta = frameStep(running.current, rawDelta);
+    running.current = active || speed.current !== 0;
     const target = active ? TURN_SPEED : 0;
     speed.current += (target - speed.current) * (1 - Math.exp(-delta * 1.6));
     if (Math.abs(speed.current) < 1e-4 && !active) {
@@ -294,6 +401,8 @@ export function ShoeStage({
   autoRotate = false,
   highlightPart,
   highlightTick,
+  focusPart,
+  focusTick,
   onSelectPart,
   label,
   className,
@@ -344,6 +453,8 @@ export function ShoeStage({
               turning={turning}
               highlightPart={highlightPart}
               highlightTick={highlightTick}
+              focusPart={focusPart}
+              focusTick={focusTick}
               onSelectPart={onSelectPart}
               reducedMotion={reducedMotion}
               commandsRef={commandsRef}
@@ -398,6 +509,8 @@ function Scene({
   turning,
   highlightPart,
   highlightTick,
+  focusPart,
+  focusTick,
   onSelectPart,
   reducedMotion,
   commandsRef,
@@ -409,6 +522,8 @@ function Scene({
   turning: boolean;
   highlightPart?: PartId;
   highlightTick?: number;
+  focusPart?: PartId;
+  focusTick?: number;
   onSelectPart?: (part: PartId) => void;
   reducedMotion: boolean;
   commandsRef: { current: ViewCommands | null };
@@ -419,7 +534,12 @@ function Scene({
     <>
           <FitCamera intro={modelReady && !reducedMotion} />
           {interactive && (
-            <ViewDriver commandsRef={commandsRef} reducedMotion={reducedMotion} />
+            <ViewDriver
+              commandsRef={commandsRef}
+              reducedMotion={reducedMotion}
+              focusPart={focusPart}
+              focusTick={focusTick}
+            />
           )}
           <Suspense fallback={null}>
             <group position={[0, -0.68, 0]}>
@@ -477,6 +597,14 @@ function Scene({
                 position={[0, 1, -6]}
                 scale={4}
               />
+              {/* A soft bounce from the floor, so the outsole reads when the shoe is seen from below. */}
+              <Lightformer
+                form="rect"
+                intensity={1.1}
+                position={[0, -4, 0.5]}
+                scale={[7, 5, 1]}
+                rotation-x={-Math.PI / 2}
+              />
             </Environment>
           </Suspense>
 
@@ -492,8 +620,8 @@ function Scene({
             zoomSpeed={0.7}
             minDistance={MIN_DISTANCE}
             maxDistance={MAX_DISTANCE}
-            minPolarAngle={0.25}
-            maxPolarAngle={Math.PI / 2 - 0.05}
+            minPolarAngle={MIN_POLAR}
+            maxPolarAngle={MAX_POLAR}
           />
     </>
   );

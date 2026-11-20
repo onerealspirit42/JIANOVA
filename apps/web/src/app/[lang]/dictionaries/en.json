@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "JIANOVA: Saudi-designed running shoes",
+    "title": "JIANOVA: running shoes in your colors",
     "description": "Design your JIANOVA running shoe in 3D: pick a color for each part, from the laces to the outsole.",
-    "customizeTitle": "Design your pair: the JIANOVA 3D designer",
+    "customizeTitle": "Design your shoe: the JIANOVA 3D designer",
     "customizeDescription": "Choose a color for each of the seven parts of the JIANOVA running shoe and turn it in 3D.",
     "brandTitle": "JIANOVA logo and colors",
     "brandDescription": "The JIANOVA star logo and its files, the brand colors and type, and how to use them.",
@@ -14,7 +14,7 @@
     "navLabel": "Main",
     "menu": "Menu",
     "home": "JIANOVA home",
-    "mainAction": "Design your pair",
+    "mainAction": "Design your shoe",
     "nav": {
       "parts": "Parts",
       "steps": "Steps",
@@ -24,7 +24,7 @@
     "quickActions": "Quick actions"
   },
   "footer": {
-    "closeTitle": "Make a JIANOVA shoe in your colors",
+    "closeTitle": "Pick the first color for your shoe",
     "closeLine": "The designer runs in your browser, on a phone or a computer.",
     "lede": "Saudi-designed running shoes",
     "groups": {
@@ -50,7 +50,7 @@
   },
   "home": {
     "hero": {
-      "title": "Saudi-designed running shoes",
+      "title": "Running shoes in your colors",
       "lead": "Pick a color for each part of the JIANOVA shoe, from the laces to the outsole, and turn it in 3D as you go.",
       "secondary": "See the colors",
       "alt": "The JIANOVA knit running shoe from the side: a deep purple upper, white laces and a white sole"
@@ -111,7 +111,7 @@
       "items": [
         {
           "q": "Can I buy a JIANOVA shoe now?",
-          "a": "Not yet. The shoe is still in design and the store is not open. You can already design your pair here."
+          "a": "Not yet. The shoe is still in design and the store is not open. You can already design your shoe here."
         },
         {
           "q": "Is the shoe on this site the final design?",
@@ -136,18 +136,10 @@
   "brand": {
     "hero": {
       "title": "The JIANOVA logo and colors",
-      "lead": "The star is drawn from the A in the wordmark, the one without a crossbar: four A’s, parted by two crossing lines. Download the files and use them as this page shows.",
+      "lead": "Download the logo files and use them as this page shows: on which grounds, at what size and with how much clear space.",
       "primary": "Download the logo",
       "secondary": "See the colors",
       "alt": "The JIANOVA logo: a four-pointed star parted by two crossing lines, beside the wordmark"
-    },
-    "star": {
-      "title": "A star of four A’s, apart at the centre",
-      "text": "Each point has the angle of the wordmark’s A, 38.6 degrees at the tip, and each side curves smoothly in to the next point. Two lines cross at the centre and part the four points, slanted to the star’s own proportions: 7 down for every 10 across.",
-      "diagramLabel": "Diagram: the letter A of the wordmark with its 38.6 degree tip, four copies of it forming a star, and the star parted into four points by two crossing lines",
-      "theA": "The A",
-      "four": "Four A’s",
-      "star": "Apart at the centre"
     },
     "meaning": {
       "title": "What the star means",
@@ -218,7 +210,7 @@
         }
       ],
       "typeTitle": "Type",
-      "typeText": "Instrument Serif for headings and Instrument Sans for text. In Arabic, Noto Naskh Arabic and IBM Plex Sans Arabic.",
+      "typeText": "Instrument Serif for headings and Instrument Sans for text. In Arabic, Noto Naskh Arabic and IBM Plex Sans Arabic.",
       "shoeColors": "Shoe colors"
     },
     "use": {
@@ -245,12 +237,20 @@
     }
   },
   "configurator": {
-    "title": "Design your pair",
+    "title": "Design your shoe",
     "intro": "Choose a part, then a color. Changes appear on the shoe right away.",
     "modelNote": "The shoe here is a stand-in model for trying the designer. The final JIANOVA shoe is still in design.",
     "partsLegend": "Part",
-    "colorsLegend": "Color for {part}",
-    "reset": "Reset to original colors",
+    "colorFor": {
+      "upper": "Color of the upper",
+      "tabs": "Color of the pull tabs",
+      "laces": "Color of the laces",
+      "lining": "Color of the lining",
+      "heel": "Color of the heel patch",
+      "midsole": "Color of the midsole",
+      "outsole": "Color of the outsole"
+    },
+    "reset": "Reset colors",
     "resetDone": "Original colors restored.",
     "undo": "Undo",
     "hint": "Drag to turn the shoe, scroll or pinch to zoom, or select a part on the shoe.",
@@ -285,7 +285,7 @@
       "ember": "Ember",
       "midnight": "Midnight"
     },
-    "copyLink": "Copy link to this design",
+    "copyLink": "Copy design link",
     "linkCopied": "Link copied. It opens this design.",
     "linkFailed": "Copy the page address from the browser bar to share this design."
   },

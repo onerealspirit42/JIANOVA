@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: path.join(__dirname, "../../"),
   cacheComponents: true,
+  // The self-hosted font files never change under the same name
+  // (scripts/fonts/build-fonts.mjs): browsers may keep them for a year.
+  async headers() {
+    return [
+      {
+        source: "/fonts/:file*.woff2",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
+  },
   partialPrefetching: true,
   turbopack: {
     rules: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { COLOR_IDS, COLORS, type ColorId } from "@/features/configurator/parts";
 
 type ColorPickerProps = {
@@ -16,16 +16,20 @@ type ColorPickerProps = {
  * (stills rendered by scripts/stills/render-stills.mjs). Native radio inputs,
  * so arrow keys move between colours and screen readers announce each one.
  *
- * A chosen colourway loads first and then fades in over the one before
- * (jianova.css: .color-frame img), so the swap never flashes the ground.
+ * A chosen colourway fades in over the one before (jianova.css:
+ * .color-frame img) once it is ready to draw, so the swap never flashes the
+ * ground. The other colourways load quietly as the section comes near, so a
+ * choice usually changes the picture at once.
  */
 export function ColorPicker({ legend, alt, names, initial = "royal" }: ColorPickerProps) {
   const [color, setColor] = useState<ColorId>(initial);
   const chosen = useRef<ColorId>(initial);
   // What is on screen: the colourway shown (`on`) and the one it covers (`under`).
   const [shown, setShown] = useState<{ on: ColorId; under: ColorId | null }>({ on: initial, under: null });
-  // Every colourway asked for so far stays in the page (the browser keeps them).
-  const [loaded, setLoaded] = useState<ColorId[]>([initial]);
+  // The colourways in the page (loading or loaded) and those ready to draw.
+  const [mounted, setMounted] = useState<ColorId[]>([initial]);
+  const ready = useRef(new Set<ColorId>([initial]));
+  const frame = useRef<HTMLDivElement>(null);
   const name = names[color];
 
   const reveal = (id: ColorId) =>
@@ -34,9 +38,33 @@ export function ColorPicker({ legend, alt, names, initial = "royal" }: ColorPick
   const choose = (id: ColorId) => {
     chosen.current = id;
     setColor(id);
-    if (loaded.includes(id)) reveal(id);
-    else setLoaded((l) => [...l, id]);
+    if (ready.current.has(id)) reveal(id);
+    else setMounted((m) => (m.includes(id) ? m : [...m, id]));
   };
+
+  // Load the other colourways when the section is near, while the browser is idle.
+  useEffect(() => {
+    const el = frame.current;
+    if (!el || !("IntersectionObserver" in window)) return;
+    // Safari has no requestIdleCallback: a short timeout stands in for it.
+    const idleApi = typeof window.requestIdleCallback === "function";
+    let idle = 0;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        const loadAll = () => setMounted((m) => [...m, ...COLOR_IDS.filter((id) => !m.includes(id))]);
+        idle = idleApi ? window.requestIdleCallback(loadAll, { timeout: 1500 }) : window.setTimeout(loadAll, 300);
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      if (idleApi) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
+    };
+  }, []);
 
   return (
     <div className="grid">
@@ -58,8 +86,8 @@ export function ColorPicker({ legend, alt, names, initial = "royal" }: ColorPick
           ))}
         </fieldset>
       </div>
-      <div className="span-6 start-7 color-frame" role="img" aria-label={alt.replace("{color}", name)}>
-        {loaded.map((id) => (
+      <div ref={frame} className="span-6 start-7 color-frame" role="img" aria-label={alt.replace("{color}", name)}>
+        {mounted.map((id) => (
           <img
             key={id}
             src={`/images/shoe/colour-${id}-sm.webp`}
@@ -69,14 +97,16 @@ export function ColorPicker({ legend, alt, names, initial = "royal" }: ColorPick
             height={1200}
             alt=""
             loading={id === initial ? "lazy" : "eager"}
+            fetchPriority={id === initial ? undefined : "low"}
             className={id === shown.on ? "is-on" : id === shown.under ? "is-under" : undefined}
             onLoad={(e) => {
-              // The newest choice fades in once its picture is ready to draw.
               if (id === initial) return;
+              // Ready once decoded; the current choice then fades in.
               const img = e.currentTarget;
               (img.decode ? img.decode() : Promise.resolve())
                 .catch(() => {})
                 .then(() => {
+                  ready.current.add(id);
                   if (chosen.current === id) reveal(id);
                 });
             }}

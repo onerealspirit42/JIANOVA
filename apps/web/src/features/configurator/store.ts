@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   DEFAULT_DESIGN,
+  PART_IDS,
   type ColorId,
   type Design,
   type PartId,
@@ -30,9 +31,11 @@ export const useConfigurator = create<ConfiguratorState>((set) => ({
     set((s) => ({ selectedPart: part, selectionTick: s.selectionTick + 1 })),
   setColor: (part, color) =>
     set((s) => ({ design: { ...s.design, [part]: color }, beforeReset: null })),
+  // Compares colours, not objects: a design changed back by hand is already
+  // the original, so there is nothing to reset (or undo).
   reset: () =>
     set((s) =>
-      s.design === DEFAULT_DESIGN
+      PART_IDS.every((part) => s.design[part] === DEFAULT_DESIGN[part])
         ? s
         : { design: DEFAULT_DESIGN, beforeReset: s.design },
     ),

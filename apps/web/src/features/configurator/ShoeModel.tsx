@@ -7,6 +7,9 @@ import * as THREE from "three";
 import { applyShoeMaterial, partAtFace } from "./shoe-material.js";
 import { COLORS, MODEL_URL, PART_IDS, partIndex, type Design, type PartId } from "./parts";
 
+/** As frameStep in ShoeStage.tsx: the first frame of a fade must not skip it. */
+const frameStep = (running: boolean, delta: number) => Math.min(delta, running ? 0.25 : 1 / 60);
+
 type ShoeModelProps = {
   design: Design;
   /** Part to briefly light; changes of `highlightTick` trigger it. */
@@ -125,7 +128,9 @@ export function ShoeModel({
     invalidate();
   }, [highlightTick, highlightPart, reducedMotion, invalidate]);
 
-  useFrame((_, delta) => {
+  const running = useRef(false);
+  useFrame((_, rawDelta) => {
+    const delta = frameStep(running.current, rawDelta);
     const a = anim.current;
     let moving = false;
     a.fades.forEach((f, i) => {
@@ -146,6 +151,7 @@ export function ShoeModel({
         moving = true;
       }
     }
+    running.current = moving;
     if (moving) invalidate();
   });
 
@@ -169,14 +175,15 @@ export function ShoeModel({
       onPointerOver={
         onSelectPart
           ? (e: ThreeEvent<PointerEvent>) => {
-              if (partAt(e)) document.body.style.cursor = "pointer";
+              // The canvas shows a hand to grab (jianova.css); over a part, a pointer to pick it.
+              if (partAt(e)) (e.nativeEvent.target as HTMLElement).style.cursor = "pointer";
             }
           : undefined
       }
       onPointerOut={
         onSelectPart
-          ? () => {
-              document.body.style.cursor = "";
+          ? (e: ThreeEvent<PointerEvent>) => {
+              (e.nativeEvent.target as HTMLElement).style.cursor = "";
             }
           : undefined
       }

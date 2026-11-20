@@ -1,14 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
-// Self-hosted faces. The taste skill dealt Instrument Serif / Instrument Sans
-// for English; Arabic falls through to Noto Naskh Arabic (headings) and
-// IBM Plex Sans Arabic (text). Browsers download only the subsets in use.
-import "@fontsource/instrument-serif/400.css";
-import "@fontsource/instrument-sans/400.css";
-import "@fontsource/instrument-sans/500.css";
-import "@fontsource/noto-naskh-arabic/arabic-400.css";
-import "@fontsource/ibm-plex-sans-arabic/arabic-400.css";
-import "@fontsource/ibm-plex-sans-arabic/arabic-500.css";
 import "../globals.css";
 import { KitScripts } from "@/components/site/KitScripts";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
@@ -47,6 +38,26 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+/**
+ * The faces each language shows on its first screen, preloaded so the text
+ * is drawn in them from the start (no jump when they arrive). The faces are
+ * self-hosted (public/fonts, public/assets/fonts.css: scripts/fonts/build-fonts.mjs).
+ * English: Instrument Serif and Instrument Sans; Arabic: Noto Naskh Arabic
+ * for headings and IBM Plex Sans Arabic for text.
+ */
+const FIRST_FACES = {
+  en: [
+    "instrument-serif-latin-400-normal",
+    "instrument-sans-latin-400-normal",
+    "instrument-sans-latin-500-normal",
+  ],
+  ar: [
+    "noto-naskh-arabic-arabic-400-normal",
+    "ibm-plex-sans-arabic-arabic-400-normal",
+    "ibm-plex-sans-arabic-arabic-500-normal",
+  ],
+} as const;
+
 /** The hero's entrance and the moments' guard, set before the first paint. */
 const HEAD_SCRIPT =
   "document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),1000);" +
@@ -71,9 +82,13 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {FIRST_FACES[lang].map((face) => (
+          <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
+        ))}
         {/* The taste-skill kit (public/assets), in the order it asks for. Plain
             files on purpose: the kit's checker and scripts expect them. */}
         {/* eslint-disable @next/next/no-css-tags */}
+        <link rel="stylesheet" href="/assets/fonts.css" />
         <link rel="stylesheet" href="/assets/system.css" />
         <link rel="stylesheet" href="/assets/ui/cards.css" />
         <link rel="stylesheet" href="/assets/motion/motion.css" />

@@ -1,7 +1,6 @@
 /**
- * The JIANOVA star: four points, each with the 38.6 degree tip of the
- * wordmark's A (the A has no crossbar), parted at the centre by two crossing
- * lines: four A's, a runner's legs crossing mid-stride.
+ * The JIANOVA star: four points parted at the centre by two crossing lines,
+ * a runner's legs crossing mid-stride.
  * From scripts/brand/build-logo.mjs, on a 70 x 100 box.
  */
 export const STAR_PATH =
