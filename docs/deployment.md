@@ -17,15 +17,21 @@ not deploy by itself. Open the app on the CranL dashboard and press
 **Redeploy**. To deploy on every push, connect the GitHub account to CranL
 (GitHub connections) and switch the source to the connected repository.
 
-**Then clear the edge cache:** once the deploy is done, press **Purge Cache**
-(the CDN box on the app's Overview). The files in `public/` (the kit's scripts
-and styles, the pictures, the model) keep their names when they change, and
-CranL's edge holds them until the cache is cleared (`next.config.ts` sends
-`s-maxage` for them), so they load from the edge rather than from the server,
-which on the Free plan can be asleep and slow to answer. Before this, a visit
-that found the server asleep got a timeout (504) for some files, and the page
-lost its motion. Then open the home page once in each language, scrolling to
-the end, so the edge holds every file again.
+**The edge cache:** the files in `public/` (the kit's scripts and styles, the
+pictures, the model) keep their names when they change, and CranL's edge holds
+them until its cache is cleared (`next.config.ts` sends `s-maxage` for them),
+so they load from the edge rather than from the server, which on the Free plan
+can be slow to answer. Before this, a visit that found the server slow got a
+timeout (504) from the edge for some files, and the page lost its motion.
+A deploy clears the edge cache by itself (seen on 21 November 2026: every file
+answered MISS right after it). If a change does not show after a deploy, press
+**Purge Cache** (the CDN box on the app's Overview). After a deploy, open the
+home page once in each language and scroll to the end, so the edge holds every
+file again before visitors come.
+
+If a deploy fails with "Timed out while waiting for handshake" or with no log
+at all, the build itself was fine: CranL could not reach its server. The site
+keeps running the previous deploy; press Redeploy again a few minutes later.
 
 Verified on the live address: every page in both languages answers 200, a
 missing page 404, the logo files and images load, and the 3D designer renders
