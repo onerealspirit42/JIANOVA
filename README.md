@@ -46,11 +46,13 @@ There is no store yet. The requirements for the final model are in
   - `src/app/[lang]` – the pages, with English and Arabic copy in `dictionaries/`
   - `src/features/configurator` – the 3D designer (React Three Fiber, three.js, Zustand, Tailwind CSS)
   - `src/components/brand` – the logo (`Logo`, `StarMark`)
+  - `src/components/site` – the home page's parts: the turning shoe (`TurnHero`), the colours,
+    and smooth scrolling for a wheel or trackpad (`SmoothScroll`, Lenis)
   - `public/assets` – the design system the marketing pages use (see Design below)
   - `public/images/shoe` – still pictures of the shoe, rendered from the 3D model
   - `public/models/shoe.glb` – the 3D shoe, every vertex tagged with its part
   - `scripts/model/build-shoe.py` – builds `shoe.glb` from the licensed source model
-  - `scripts/stills/` – renders the shoe stills from the model
+  - `scripts/stills/` – renders the shoe stills and the turn's frames from the model
   - `scripts/brand/` – writes the logo files and icons
   - `scripts/fonts/` – self-hosts the typefaces in `public/fonts` (each page preloads its own)
 - `docs/` – project documentation

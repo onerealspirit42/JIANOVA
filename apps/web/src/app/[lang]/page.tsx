@@ -4,6 +4,7 @@ import { ActionBar } from "@/components/site/ActionBar";
 import { ColorPicker } from "@/components/site/ColorPicker";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteNav } from "@/components/site/SiteNav";
+import { SmoothScroll } from "@/components/site/SmoothScroll";
 import { TurnHero } from "@/components/site/TurnHero";
 import { getDictionary, hasLocale } from "./dictionaries";
 
@@ -67,7 +68,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               <h2 id="parts-h">{t.parts.title}</h2>
               <p>{t.parts.lead}</p>
             </div>
-            {/* Composition "pair": two close-ups at one ratio, tops level. */}
+            {/* Composition "pair": two close-ups at one ratio, tops level (edge to edge and square from 1024px). */}
             <div className="grid">
               {PAIR.map((id) => {
                 const item = t.parts.items.find((i) => i.id === id)!;
@@ -75,7 +76,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                   <div key={id} className="span-6 frame frame--photo part-frame">
                     <img
                       {...shoe(PART_IMAGES[id])}
-                      sizes="(min-width: 1024px) 628px, 100vw"
+                      sizes="(min-width: 1024px) 76vw, 114vw"
                       width={1600}
                       height={1200}
                       alt={item.alt}
@@ -107,7 +108,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                     <figure className="mo-pc__visual">
                       <img
                         {...shoe(STEP_IMAGES[i])}
-                        sizes="(min-width: 1024px) 628px, 100vw"
+                        sizes="(min-width: 1024px) 50vw, 100vw"
                         width={1600}
                         height={1000}
                         alt={step.alt}
@@ -190,6 +191,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           </div>
         </section>
       </main>
+      <SmoothScroll />
 
       <SiteFooter lang={lang} dict={dict} page="home" alternate={alternate} />
       <ActionBar lang={lang} dict={dict} />

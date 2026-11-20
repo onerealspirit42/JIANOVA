@@ -67,8 +67,9 @@ export default function (root, opts, lib) {
     scrubber = lib.scrub(root, p => {
       const at = p * steps.length;
       show(Math.min(steps.length - 1, Math.floor(at)));
-      // how far through its own part of the scroll the open step is (its line fills, jianova.css)
-      root.style.setProperty('--mo-step-p', (Math.min(at, steps.length - 0.0001) % 1).toFixed(3));
+      // how far through its own part of the scroll the open step is (its line fills, jianova.css);
+      // set on that step alone, so only it is restyled as the page scrolls
+      steps[k]?.style.setProperty('--mo-step-p', (Math.min(at, steps.length - 0.0001) % 1).toFixed(3));
     });
     root.classList.add('is-live');
     grid?.setAttribute('data-edge-free', '');   // live the grid is one screen of a two-screen section: the layout check skips it (the rest rows are checked)
@@ -82,7 +83,7 @@ export default function (root, opts, lib) {
     grid?.removeAttribute('data-edge-free');
     scrubber?.destroy(); scrubber = null;
     figures.forEach((f, n) => { homes[n].append(f); f.classList.remove('is-on', 'is-past'); });
-    steps.forEach(s => s.classList.remove('is-on'));
+    steps.forEach(s => { s.classList.remove('is-on'); s.style.removeProperty('--mo-step-p'); });
     k = -1;
   };
   const sync = () => { const f = fits(); if (f) go(); else rest(); root.classList.toggle('is-static', !f && wide()); };

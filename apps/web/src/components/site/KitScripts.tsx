@@ -97,7 +97,10 @@ export function KitScripts() {
       if (!target) return;
       event.preventDefault();
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+      // a page scrolling smoothly (SmoothScroll.tsx) glides there itself, stopping under the bar as the browser would
+      const lenis = window.__jianovaLenis;
+      if (lenis) lenis.scrollTo(target, { offset: -(parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0) });
+      else target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
       history.pushState(history.state, "", url.hash);
       // Move focus with the view, as a jump to an anchor does, without a second scroll.
       if (!target.matches("a, button, input, select, textarea, [tabindex]")) target.setAttribute("tabindex", "-1");
@@ -136,9 +139,11 @@ export function KitScripts() {
     return () => spy.disconnect();
   }, []);
 
-  // Pictures marked data-parallax drift inside their frames as the page scrolls past them.
+  // Pictures marked data-parallax drift inside their frames as the page scrolls past them: by the
+  // compositor where the browser can tie an animation to the scroll (jianova.css), here elsewhere.
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "off") return;
+    if (CSS.supports?.("animation-timeline: view()")) return;
     const pictures = [...document.querySelectorAll<HTMLElement>("[data-parallax]")];
     if (!pictures.length || !("IntersectionObserver" in window)) return;
     const near = new Set<HTMLElement>();

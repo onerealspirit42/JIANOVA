@@ -8,10 +8,13 @@
  *   ... --frames 61 --size 1400x1050          (defaults)
  *
  * Writes public/images/shoe/turn/NN.webp (the frames; NN-sm.webp, 1100 pixels
- * across, for phones), turn/hero.webp and
- * turn/hero-sm.webp (frame 0, sharper, for the first screen), and
- * src/components/site/turn-frames.ts (each frame's box round the shoe, so the
- * page can keep the shoe centred and fill the screen with it).
+ * across, for phones), turn/hero.webp and turn/hero-sm.webp (frame 0, sharper,
+ * for the first screen, cut to the shoe so the page can show it whole and as
+ * large as its box allows), and src/components/site/turn-frames.ts (each
+ * frame's box round the shoe, so the page can keep the shoe centred and fill
+ * the screen with it, and where the first-screen still was cut).
+ *
+ *   ... --hero-only        renders the first-screen stills alone (the frames as they are)
  *
  * Same model, material and studio as render-stills.mjs (render.html, with
  * ?turn=1 for a square shadow ground). Needs Playwright with Chromium and ffmpeg.
@@ -34,6 +37,9 @@ const opt = (name, fallback) => {
 const FRAMES = Number(opt("frames", "61")); // 0..360 degrees inclusive: the last frame is the side view again
 const [W, H] = opt("size", "1400x1050").split("x").map(Number);
 const HERO = [2400, 1800];
+/** Frame pixels kept round frame 0's box when the first-screen still is cut (rounded out to sevens, so both still sizes cut on whole pixels). */
+const STILL_PAD = 28;
+const heroOnly = args.includes("--hero-only");
 /**
  * The phone set: the same frames rendered 1100 pixels across. A phone draws the
  * shoe at most about 770 device pixels wide, so this set is never shown above
@@ -140,9 +146,15 @@ const render = async (spec, file) => {
   return box;
 };
 
-const boxes = [];
-const looks = [];
-for (let f = 0; f < FRAMES; f++) {
+let boxes = [];
+let looks = [];
+if (heroOnly) {
+  // the frames as they are: their boxes and looks from the last full render
+  const last = await readFile(join(WEB, "src/components/site/turn-frames.ts"), "utf8");
+  boxes = JSON.parse(last.match(/TURN_BOXES[^=]*= (\[.*?\]);/s)[1]);
+  looks = JSON.parse(last.match(/TURN_LOOKS[^=]*= (\[.*?\]);/s)[1]);
+}
+for (let f = 0; f < (heroOnly ? 0 : FRAMES); f++) {
   const spec = { colors: colorsAt(f), rotationY: -(f / (FRAMES - 1)) * Math.PI * 2, ...CAMERA };
   const name = String(f).padStart(2, "0");
   const box = await render({ ...spec, width: W, height: H }, join(tmp, `${f}.png`));
@@ -153,13 +165,23 @@ for (let f = 0; f < FRAMES; f++) {
   looks.push(lookAt(f));
   process.stdout.write(`\rframe ${f + 1}/${FRAMES}`);
 }
-process.stdout.write("\n");
+if (!heroOnly) process.stdout.write("\n");
 
-// Frame 0 again, larger, for the first screen (the picture the turn starts from).
+// Frame 0 again, larger, for the first screen (the picture the turn starts from), cut to the shoe:
+// in frame pixels, rounded out to multiples of 7 (the stills are 12/7 and 6/7 of a frame).
+const [bx0, by0, bw0, bh0] = boxes[0];
+const out7 = (v) => Math.floor(v / 7) * 7;
+const up7 = (v) => Math.ceil(v / 7) * 7;
+const sx = Math.max(0, out7(bx0 - STILL_PAD)), sy = Math.max(0, out7(by0 - STILL_PAD));
+const still = [sx, sy, Math.min(out7(W), up7(bx0 + bw0 + STILL_PAD)) - sx, Math.min(out7(H), up7(by0 + bh0 + STILL_PAD)) - sy];
 for (const [name, scale] of [["hero", 1], ["hero-sm", 0.5]]) {
   const file = join(tmp, `${name}.png`);
+  const k = (HERO[0] * scale) / W;
   await render({ colors: colorsAt(0), rotationY: 0, ...CAMERA, width: HERO[0] * scale, height: HERO[1] * scale }, file);
-  webp(file, join(OUT, `${name}.webp`), 84);
+  const [cx, cy, cw, ch] = still.map((v) => Math.round(v * k));
+  // (a crop moves no pixel: the transparency stays exact)
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", file, "-vf", `crop=${cw}:${ch}:${cx}:${cy}`,
+    "-c:v", "libwebp", "-pix_fmt", "yuva420p", "-quality", "84", "-compression_level", "6", join(OUT, `${name}.webp`)]);
 }
 
 const ts = `// Written by scripts/stills/render-turn.mjs: do not edit by hand.
@@ -169,9 +191,11 @@ export const TURN_FRAMES = { count: ${FRAMES}, width: ${W}, height: ${H} } as co
 export const TURN_BOXES: readonly (readonly [number, number, number, number])[] = ${JSON.stringify(boxes)};
 /** Which look each frame shows: 0 brand (royal purple), 1 ember, 2 oasis green. */
 export const TURN_LOOKS: readonly number[] = ${JSON.stringify(looks)};
+/** The part of frame 0 the first-screen still shows, in frame pixels (turn/hero.webp shows it at ${HERO[0]}/${W} of its size, hero-sm.webp at ${HERO[0] / 2}/${W}). */
+export const TURN_STILL: readonly [number, number, number, number] = ${JSON.stringify(still)};
 `;
 await writeFile(join(WEB, "src/components/site/turn-frames.ts"), ts);
 await rm(tmp, { recursive: true, force: true });
 await browser.close();
 server.close();
-console.log(`wrote ${FRAMES} frames, hero stills and turn-frames.ts`);
+console.log(heroOnly ? "wrote the hero stills and turn-frames.ts" : `wrote ${FRAMES} frames, hero stills and turn-frames.ts`);

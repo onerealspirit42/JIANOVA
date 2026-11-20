@@ -5,6 +5,7 @@ import { STAR_PATH, StarMark } from "@/components/brand/StarMark";
 import { ActionBar } from "@/components/site/ActionBar";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteNav } from "@/components/site/SiteNav";
+import { SmoothScroll } from "@/components/site/SmoothScroll";
 import { COLOR_IDS, COLORS } from "@/features/configurator/parts";
 import { getDictionary, hasLocale } from "../dictionaries";
 
@@ -199,6 +200,7 @@ export default async function BrandPage({ params }: PageProps<"/[lang]/brand">) 
           </div>
         </section>
       </main>
+      <SmoothScroll />
 
       <SiteFooter lang={lang} dict={dict} page="brand" alternate={alternate} />
       <ActionBar lang={lang} dict={dict} />

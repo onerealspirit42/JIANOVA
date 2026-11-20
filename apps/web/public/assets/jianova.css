@@ -42,7 +42,8 @@ html[lang="ar"] body { line-height: 1.75; }
 /* ---------------------------------------------------------------- home */
 
 /* Parts: the pair of close-ups, 4:3, on the soft panel ground. */
-.part-frame { aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--r-lg); background: var(--p-surface); }
+/* (clip, not hidden: a box that hides its overflow scrolls, and the picture's drift would follow that box's scroll, not the page's) */
+.part-frame { aspect-ratio: 4 / 3; overflow: clip; border-radius: var(--r-lg); background: var(--p-surface); }
 .part-frame img { width: 100%; height: 100%; object-fit: cover; }
 
 /* Questions: the designer on a phone, under the heading. */
@@ -277,6 +278,14 @@ html:not([data-motion="off"]) .swatch:active { transform: scale(.985); }
 /* Text drawn the same on every Mac screen: the light-on-purple bands stay crisp. */
 html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
+/* ------------------------------------------------------- smooth scrolling
+   A wheel or trackpad glides the page (SmoothScroll.tsx, Lenis); its rules from lenis.css. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
 /* ------------------------------------------------------- page motion
    Moving between pages: the old page fades out and the new one rises softly
    in (cross-document view transitions; browsers without them just load the
@@ -301,26 +310,40 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
    and pages without script show everything at rest. */
 @media (prefers-reduced-motion: no-preference) {
   /* Out of sight at once (no transition on the way out), then the arrival eases in. Words
-     rise 56px; a picture opens out of a smaller frame as it rises; the closing name climbs
-     out from behind its own edge. */
+     rise 56px; a picture rises from a step further down, slightly smaller, while the shoe in
+     it settles from a closer view; the closing name climbs. Only position, size and fade
+     move, which the compositor runs without repainting: smooth on a phone. */
   html:not([data-motion="off"]) .rv { opacity: 0; translate: 0 56px; }
-  html:not([data-motion="off"]) .rv:is(.part-frame, .color-frame, .phone-shot, .meaning-frame, .tile) { translate: 0 88px; scale: .9; clip-path: inset(9% 7%); }
-  /* (never clipped away entirely: an observer counts a clipped box as off screen) */
-  html:not([data-motion="off"]) .rv.footer__wordmark { translate: 0 64px; clip-path: inset(0 0 40% 0); }
+  html:not([data-motion="off"]) .rv:is(.part-frame, .color-frame, .phone-shot, .meaning-frame, .tile) { translate: 0 80px; scale: .94; }
+  html:not([data-motion="off"]) .rv:is(.part-frame, .color-frame) > img { scale: 1.12; }
+  html:not([data-motion="off"]) .rv.footer__wordmark { translate: 0 64px; }
   html:not([data-motion="off"]) .rv.is-in {
-    opacity: 1; translate: none; scale: none; clip-path: inset(0);
+    opacity: 1; translate: none; scale: none;
     transition:
-      opacity 1000ms var(--lux-ease) var(--rv-delay, 0ms),
-      translate 1400ms var(--lux-ease) var(--rv-delay, 0ms),
-      scale 1400ms var(--lux-ease) var(--rv-delay, 0ms),
-      clip-path 1400ms var(--lux-ease) var(--rv-delay, 0ms);
+      opacity 900ms var(--lux-ease) var(--rv-delay, 0ms),
+      translate 1200ms var(--lux-ease) var(--rv-delay, 0ms),
+      scale 1200ms var(--lux-ease) var(--rv-delay, 0ms);
   }
+  html:not([data-motion="off"]) .rv.is-in:is(.part-frame, .color-frame) > img { scale: 1; transition: scale 1400ms var(--lux-ease) var(--rv-delay, 0ms); }
   /* Pictures fade in as they arrive instead of appearing line by line. */
   html:not([data-motion="off"]) img.is-loading { opacity: 0; }
   html:not([data-motion="off"]) img.is-arrived { transition: opacity 900ms var(--lux-ease); }
 }
 @media print {
-  .rv, img.is-loading { opacity: 1 !important; translate: none !important; scale: none !important; clip-path: none !important; }
+  .rv, .rv > img, img.is-loading { opacity: 1 !important; translate: none !important; scale: none !important; }
+}
+
+/* The close-ups drift inside their frames as the page scrolls past (KitScripts.tsx draws the
+   same drift where the browser cannot tie an animation to the scroll): down 6% as a frame comes
+   in, up 6% as it leaves, a little larger than the frame so no edge shows. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-motion="off"]) img[data-parallax] { animation: jv-drift linear both; animation-timeline: view(); animation-range: cover; }
+  }
+}
+@keyframes jv-drift {
+  from { transform: translate3d(0, 6%, 0) scale(1.14); }
+  to { transform: translate3d(0, -6%, 0) scale(1.14); }
 }
 
 /* The designer's panel opens in a soft cascade as the page arrives. */
@@ -334,31 +357,34 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 @keyframes jv-rise { from { opacity: 0; translate: 0 14px; } }
 
 /* ------------------------------------------------------------ the turn
-   The first screen is also the start of the turn (TurnHero.tsx): when it is
-   live the section is three and a half screens tall and its stage (.turn__pin)
-   holds while the words scroll away, the stage turns into a lit studio and the
-   shoe, drawn on a canvas, grows and turns a full circle. Still (no script,
-   reduced motion): one screen, the words and frame 0, as the kit's product hero. */
-main > .hero.turn { height: auto; min-height: 0; padding: 0; display: block; }
-.turn__pin {
-  position: relative; isolation: isolate; overflow: clip;
-  min-height: 100vh; min-height: 100svh;
-  padding: calc(var(--nav) + var(--hgap)) 0 calc(var(--hpadb) + var(--bar));
-  display: flex; flex-direction: column;
-}
-.turn__pin > .wrap { position: relative; z-index: 2; flex: 1 1 auto; display: flex; flex-direction: column; }
-.turn__pin > .wrap > .hero-text { flex: 1 1 auto; }
-.turn .hero__head { will-change: transform, opacity; }
-/* the still is frame 0: laid out by cover (TurnHero reads the same numbers to start the canvas on it) */
-.hero--product .hero__stage > img.turn__still { object-fit: cover; object-position: 50% 46%; padding: 0; }
+   The first screen is also the start of the turn (TurnHero.tsx). Still (no script, reduced
+   motion): one screen, the words over frame 0, as the kit's product hero. Live: the section
+   is three and a half screens tall; the words lie over the stage, outside it, so they scroll
+   away exactly with the page; the stage (.turn__pin) holds, turns into a lit studio, and the
+   shoe, drawn on a canvas that the compositor moves, grows and turns a full circle. The stage
+   is as tall as the screen with the phone's toolbar folded away (lvh), so the studio reaches
+   the bottom edge; what it shows sits in the screen with the toolbar out (.turn__view, svh). */
+main > .hero.turn { display: flex; flex-direction: column; height: auto; min-height: 100vh; min-height: 100svh; padding: 0; }
+.turn__lead { position: relative; z-index: 4; padding-top: calc(var(--nav) + var(--hgap)); }
+.turn__pin { position: relative; flex: 1 1 auto; display: flex; flex-direction: column; isolation: isolate; overflow: clip; padding-bottom: calc(var(--hpadb) + var(--bar)); }
+.turn__view { position: relative; flex: 1 1 auto; display: flex; flex-direction: column; }
+.turn__rest { position: relative; z-index: 1; flex: 1 1 auto; display: flex; flex-direction: column; }
+.turn__rest > .hero__stage { flex: 1 1 auto; }
+/* the still is frame 0 cut to the shoe, shown whole and centred (TurnHero reads the same numbers to start the canvas on it) */
+.hero--product .hero__stage > img.turn__still { object-fit: contain; object-position: 50% 50%; padding: 0; }
 .turn__ground {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: var(--turn-dark, 0);
+  position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
   background: radial-gradient(ellipse 72% 58% at 50% 55%, #5d438c 0%, #301a4d 44%, #150a22 100%);
+  will-change: opacity;
 }
-.turn__canvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: 0; }
+/* (its own size, set by TurnHero, wider than a phone: the kit's max-width for canvases would squeeze it) */
+.turn__frame { position: absolute; left: 0; top: 0; z-index: 2; max-width: none; pointer-events: none; opacity: 0; transform-origin: 50% 50%; will-change: transform, opacity; }
 .turn__captions, .turn__looks { display: none; }
-main > .hero.turn.is-live { height: calc(100vh + 250vh); height: calc(100svh + 250svh); }
-.turn.is-live .turn__pin { position: sticky; top: 0; height: 100vh; height: 100svh; min-height: 0; }
+main > .hero.turn.is-live { display: block; height: calc(100vh + 250vh); height: calc(100svh + 250svh); min-height: 0; }
+.turn.is-live .turn__lead { position: absolute; inset: 0 0 auto; will-change: opacity; }
+.turn.is-live .turn__pin { position: sticky; top: 0; display: block; height: 100vh; height: 100lvh; padding: 0; }
+.turn.is-live .turn__view { position: absolute; inset: 0 0 auto; display: block; height: 100vh; height: 100svh; }
+.turn.is-live .turn__rest { position: absolute; inset: 0; margin-inline: auto; padding-top: var(--lead-h, 0px); padding-bottom: calc(var(--hpadb) + var(--bar)); }
 .turn.is-live .hero__stage { min-height: 160px; }
 .turn.is-live .turn__captions { display: block; position: absolute; z-index: 3; inset-inline: var(--gut); top: 13%; pointer-events: none; text-align: center; }
 .turn__cap {
@@ -373,7 +399,7 @@ html[lang="ar"] .turn__cap { line-height: 1.3; letter-spacing: 0; }
   display: flex; justify-content: center; flex-wrap: wrap; gap: var(--s-3) var(--s-5);
   position: absolute; z-index: 3; inset-inline: var(--gut); bottom: 6%;
   margin: 0; padding: 0; list-style: none; opacity: 0; pointer-events: none;
-  color: #fff; font-size: 14px; line-height: 1.3;
+  color: #fff; font-size: 14px; line-height: 1.3; will-change: opacity;
 }
 .turn__looks li { display: flex; align-items: center; gap: var(--s-2); opacity: .45; transition: opacity 400ms var(--lux-ease); }
 .turn__looks li.is-on { opacity: 1; }
@@ -385,11 +411,14 @@ html[lang="ar"] .turn__cap { line-height: 1.3; letter-spacing: 0; }
   /* above the phone's action bar (64px), which shows once the hero's button has scrolled away */
   .turn.is-live .turn__looks { bottom: calc(64px + env(safe-area-inset-bottom) + 3.5%); gap: var(--s-2) var(--s-4); font-size: 13px; }
 }
+/* a short screen (a phone on its side): one line of caption under the header, clear of the shoe */
+@media (max-height: 520px) {
+  .turn.is-live .turn__captions { top: calc(var(--nav) + var(--s-3)); }
+  .turn__cap { max-width: 32ch; font-size: clamp(22px, 7vh, 34px); }
+  .turn.is-live .turn__looks { bottom: 4%; font-size: 12px; }
+}
 /* While the studio is dark, the header and the phone's action bar turn to dark glass, so the
-   stage runs from edge to edge (html.is-studio, set by TurnHero.tsx; the open menu keeps its
-   paper). Under the stage, the section darkens with it: on a phone whose toolbar has folded
-   away the screen is taller than the stage (100svh), and that last strip shows the section. */
-main > .hero.turn.is-live { background-color: color-mix(in oklab, #1a0d2b calc(var(--turn-dark, 0) * 100%), var(--p-bg)); }
+   stage runs from edge to edge (html.is-studio, set by TurnHero.tsx; the open menu keeps its paper). */
 .nav { transition: background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease), color 400ms var(--lux-ease); }
 .nav__toggle { transition: color 400ms var(--lux-ease), border-color 400ms var(--lux-ease); }
 html.is-studio .nav:not(.is-open) {
@@ -412,9 +441,13 @@ html.is-studio .nav:not(.is-open) .btn--primary:hover { background: color-mix(in
   .actionbar { transition: transform 240ms var(--ease), visibility 0s, background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease); }
 }
 @media print {
-  main > .hero.turn.is-live { height: auto; }
-  .turn.is-live .turn__pin { position: static; height: auto; }
-  .turn__canvas, .turn__captions, .turn__looks, .turn__ground { display: none !important; }
+  main > .hero.turn.is-live { display: flex; height: auto; min-height: 0; }
+  .turn.is-live .turn__lead { position: relative; opacity: 1 !important; }
+  .turn.is-live .turn__pin { position: relative; height: auto; }
+  .turn.is-live .turn__view { position: relative; height: auto; }
+  .turn.is-live .turn__rest { position: relative; padding: 0; }
+  .turn__still { opacity: 1 !important; }
+  .turn__frame, .turn__captions, .turn__looks, .turn__ground { display: none !important; }
 }
 
 /* ------------------------------------------------------------ steps, live everywhere
@@ -425,9 +458,15 @@ html.is-studio .nav:not(.is-open) .btn--primary:hover { background: color-mix(in
 #steps .mo-pc__step { padding-left: 0; padding-inline-start: var(--s-5); border-left: 0; border-inline-start: 2px solid var(--line); position: relative; }
 #steps.is-live .mo-pc__step.is-on { border-inline-start-color: var(--line); }
 #steps.is-live .mo-pc__step.is-on::before {
-  content: ""; position: absolute; inset-inline-start: -2px; top: 0; width: 2px;
-  height: calc(var(--mo-step-p, 0) * 100%); background: var(--accent);
+  content: ""; position: absolute; inset-inline-start: -2px; top: 0; width: 2px; height: 100%;
+  background: var(--accent); transform: scaleY(var(--mo-step-p, 0)); transform-origin: 50% 0; will-change: transform;
 }
+/* Live, the chapters keep their own height (the hold and one screen) and their stage its one screen,
+   whatever the kit's section rhythm says: from 640 to 1279px it makes each section a column whose
+   .wrap grows to fill it, which stretched the stage to two screens, so nothing held (tablets, and
+   desktop windows 1024 to 1279 wide). */
+main > #steps[data-moment].is-live { height: calc((var(--mo-hold) + 1) * 100vh); height: calc((var(--mo-hold) + 1) * 100svh); min-height: 0; }
+main > #steps[data-moment].is-live > .mo-pc__grid { flex: none; }
 #steps .mo-pc__visuals { background: radial-gradient(ellipse 80% 70% at 50% 56%, #fff 0%, var(--p-surface) 72%); }
 main #steps[data-moment].is-live .mo-pc__visual { transform: translate3d(0, 8%, 0) scale(1.1); transition: opacity 650ms var(--lux-ease), transform 1200ms var(--lux-ease); }
 main #steps[data-moment].is-live .mo-pc__visual.is-on { transform: none; }
@@ -452,6 +491,25 @@ main #steps[data-moment].is-live .mo-pc__visual.is-past { transform: translate3d
   main #steps[data-moment].is-live > .mo-pc__grid { padding-bottom: var(--s-7); }
 }
 
+/* ------------------------------------------------------------ desktop, full screen
+   From 1024px the pictures take the screen as they do on a phone: the close-ups run edge to
+   edge as a pair, square and nearly a screen tall; the steps' picture fills the right half of
+   the held stage from top to bottom and out to the screen's edge (the left in Arabic); the
+   colour picture runs out to the edge too, tall beside the swatches. --bleed is the distance
+   from the page's column to the screen's edge (the body clips what passes the scrollbar). */
+@media (min-width: 1024px) {
+  :root { --bleed: max(var(--gut), (100vw - var(--container)) / 2); }
+  #parts .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6px; margin-inline: calc(-1 * var(--bleed)); }
+  #parts .grid > .span-6 { grid-column: auto; }
+  #parts .part-frame { aspect-ratio: 1 / 1; max-height: 88vh; max-height: 88svh; border-radius: 0; }
+  main #steps[data-moment].is-live > .mo-pc__grid { grid-template-rows: minmax(0, 1fr); align-content: stretch; align-items: stretch; padding-top: var(--nav); padding-bottom: 0; overflow: visible; }
+  main #steps[data-moment].is-live .mo-pc__text { align-self: center; }
+  main #steps[data-moment].is-live .mo-pc__visuals { width: auto; height: auto; max-height: none; aspect-ratio: auto; border: 0; border-radius: 0; margin-inline-end: calc(-1 * var(--bleed)); }
+  main #steps[data-moment].is-live .mo-pc__visual > img { object-fit: contain; }
+  #colors .grid { align-items: center; }
+  #colors .color-frame { aspect-ratio: auto; height: min(70vh, 50vw); height: min(70svh, 50vw); border-radius: 0; margin-inline-end: calc(-1 * var(--bleed)); }
+}
+
 /* ------------------------------------------------------------ statement, held
    The statement holds in the middle of the screen while the section scrolls past, and
    its words light one by one (moments/word-highlight/moment.js, opts.pin); on a phone
@@ -468,6 +526,10 @@ main > #idea.is-pinned { height: calc(100vh + 130vh); height: calc(100svh + 130s
 @media (max-width: 639px) {
   #idea .mo-wh__text { font-size: clamp(32px, 8.8vw, 42px); line-height: 1.16; }
   html[lang="ar"] #idea .mo-wh__text { line-height: 1.4; }
+}
+@media (min-width: 1024px) {
+  #idea .mo-wh__text { font-size: clamp(48px, 5.2vw, 88px); line-height: 1.06; max-width: 26ch; }
+  html[lang="ar"] #idea .mo-wh__text { font-size: clamp(40px, 4.2vw, 68px); line-height: 1.5; max-width: 30ch; }
 }
 @media (prefers-reduced-motion: reduce) {
   #idea .mo-wh .mo-w { color: var(--ink); }
