@@ -142,13 +142,18 @@ a, button, label, input, summary { touch-action: manipulation; }
 #idea.ground-surface { background: var(--p-surface); }
 
 /* Phone: the designer screenshot a little larger, so the questions fill their two screens. */
+@media (max-width: 639px) {
+  html[lang="ar"] #questions .faq > .faq__item { padding-block: calc(var(--s-4) + 10px); }
+  html[lang="ar"] #questions .faq > .faq__item:first-child { padding-top: 0; }
+}
 @media (max-width: 639px) { .phone-shot { width: 240px; } }
 
-/* Arabic: the hero headline on tighter lines (Naskh at display size stays clear at 1.2), so the shoe
-   below keeps the size it has in English; and on phones the designer screenshot a little larger, as
+/* Arabic: the hero headline on tighter lines (Naskh at display size stays clear at 1.2) and a tenth
+   smaller (Naskh's letters stand taller than Instrument Serif's at one size), so the shoe below keeps
+   the size it has in English; and on phones the designer screenshot a little larger, as
    the Arabic answers run shorter and would leave the questions' second screen half empty. */
-html[lang="ar"] .hero h1 { line-height: 1.2; }
-@media (max-width: 639px) { html[lang="ar"] .phone-shot { width: 272px; } }
+html[lang="ar"] .hero h1 { line-height: 1.2; font-size: calc(var(--ly-h1) * .9); }
+@media (max-width: 639px) { html[lang="ar"] .phone-shot { width: 288px; } }
 
 /* ------------------------------------------------------------- motion
    Quiet luxury moves slowly and lands softly: the kit's timings, eased out
@@ -159,8 +164,8 @@ html[lang="ar"] .hero h1 { line-height: 1.2; }
 :root {
   --ease: cubic-bezier(.22, 1, .36, 1);
   --dur: 260ms;
-  --m-in: 180ms;
-  --m-out: 220ms;
+  --m-in: 150ms;
+  --m-out: 240ms;
   --m-press: 140ms;
   --m-panel: 320ms;
   --m-close: 220ms;

@@ -59,7 +59,7 @@ const DARK = new Set(["royal", "midnight", "oasis", "ember", "stone"]);
 const SIDE = { camera: [0.15, 1.05, 5.6], target: [0.02, 0.6, 0], fov: 18 };
 const THREE_Q = { camera: [5.4, 2.6, 7.0], target: [0.05, 0.6, 0], fov: 16 };
 const STILLS = [
-  { name: "hero", width: 3000, height: 1500, colors: BRAND, trim: 0.008, ...SIDE },
+  { name: "hero", width: 3000, height: 1500, colors: BRAND, trim: 0.016, ...SIDE },
   // Close-ups for the parts section (4:3), each in a colourway that sets the parts apart
   { name: "part-laces", width: 1600, height: 1200, colors: design("oasis", "chalk", "chalk", "midnight", "oasis", "chalk", "midnight"), camera: [2.1, 4.3, 3.4], target: [0.15, 0.7, 0], fov: 27 },
   { name: "part-heel", width: 1600, height: 1200, colors: CHALK, camera: [-4.3, 2.3, 3.0], target: [-0.7, 0.68, 0.1], fov: 25 },
