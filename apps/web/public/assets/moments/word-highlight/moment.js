@@ -21,15 +21,19 @@ export default function (root, opts, lib) {
   const words = lib.split(text, 'words').map(i => i.parentElement);
   if (lib.reduced()) { words.forEach(w => w.classList.add('is-on')); root.classList.add('is-done'); return {}; }
   const from = opts.from ?? 0.85, to = opts.to ?? 0.45;
+  // JIANOVA: opts.pin holds the statement in the middle of the screen (jianova.css, "statement") while
+  // the section scrolls past, and the words light with the section's own scroll
+  const pin = opts.pin === true;
+  if (pin) root.classList.add('is-pinned');
   let n = -1;
-  const s = lib.scrub(text, (p, r) => {
+  const s = lib.scrub(pin ? root : text, (p, r) => {
     const vh = innerHeight, start = vh * from, end = vh * to;
-    const t = lib.clamp((start - r.top) / Math.max(1, (start - end) + r.height));
+    const t = pin ? lib.clamp((p - 0.06) / 0.74) : lib.clamp((start - r.top) / Math.max(1, (start - end) + r.height));
     const atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;   // page bottom: it can climb no further, the statement stands in full ink
     const k = atEnd ? words.length : Math.round(t * words.length);
     if (k === n) return;
     n = k;
     words.forEach((w, i) => w.classList.toggle('is-on', i < k));
-  }, { mode: 'view' });
+  }, { mode: pin ? 'hold' : 'view' });
   return { destroy: s.destroy };
 }

@@ -4,6 +4,7 @@ import { ActionBar } from "@/components/site/ActionBar";
 import { ColorPicker } from "@/components/site/ColorPicker";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteNav } from "@/components/site/SiteNav";
+import { TurnHero } from "@/components/site/TurnHero";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 /*
@@ -16,7 +17,8 @@ import { getDictionary, hasLocale } from "./dictionaries";
         footer-columns · close-type · rhythm brand-band · buttons block ·
         mark: the client's star logo · moments: pinned-chapters (#steps),
         word-highlight (#idea).
-  Sections: hero (object) · parts (a pair of close-ups) · steps (pinned
+  Sections: hero and turn (the shoe turns a full circle with the scroll,
+  TurnHero.tsx) · parts (a pair of close-ups) · steps (pinned
   chapters, three views) · idea (statement) · colors (brand band, swatches swap
   the picture) · questions (faq) · footer.closing.
 */
@@ -48,38 +50,16 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       <SiteNav lang={lang} dict={dict} page="home" alternate={alternate} />
 
       <main id="top">
-        <section className="hero hero--product" data-enter aria-labelledby="hero-h">
-          <div className="wrap">
-            <div className="hero-text hero__in">
-              <div className="hero__head">
-                <div>
-                  <h1 id="hero-h">{t.hero.title}</h1>
-                  <p className="hero__lead">{t.hero.lead}</p>
-                </div>
-                <div className="btn-row">
-                  <a className="btn btn--primary" href={`/${lang}/customize`}>
-                    {dict.common.mainAction}
-                  </a>
-                  <a className="btn btn--secondary" href="#colors">
-                    {t.hero.secondary}
-                  </a>
-                </div>
-              </div>
-              <div className="hero__stage">
-                <img
-                  className="is-cutout"
-                  src="/images/shoe/hero.webp"
-                  srcSet="/images/shoe/hero-sm.webp 1200w, /images/shoe/hero.webp 2400w"
-                  sizes="(min-width: 1440px) 1280px, 100vw"
-                  width={2400}
-                  height={1256}
-                  alt={t.hero.alt}
-                  fetchPriority="high"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
+        <TurnHero
+          title={t.hero.title}
+          lead={t.hero.lead}
+          primary={{ label: dict.common.mainAction, href: `/${lang}/customize` }}
+          secondary={{ label: t.hero.secondary, href: "#colors" }}
+          alt={t.hero.alt}
+          captions={t.turn.captions}
+          looksLabel={t.turn.looksLabel}
+          lookNames={[dict.configurator.colors.royal, dict.configurator.colors.ember, dict.configurator.colors.oasis]}
+        />
 
         <section className="section" id="parts" aria-labelledby="parts-h">
           <div className="wrap">
@@ -100,6 +80,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                       height={1200}
                       alt={item.alt}
                       loading="lazy"
+                      data-parallax
                     />
                   </div>
                 );
@@ -141,7 +122,13 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           </div>
         </section>
 
-        <section className="section statement ground-surface" id="idea" data-moment="word-highlight" aria-labelledby="idea-h">
+        <section
+          className="section statement ground-surface"
+          id="idea"
+          data-moment="word-highlight"
+          data-moment-opts='{"pin":true}'
+          aria-labelledby="idea-h"
+        >
           <div className="wrap">
             <h2 id="idea-h" className="t-label">
               {t.idea.title}

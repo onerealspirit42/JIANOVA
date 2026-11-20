@@ -46,7 +46,10 @@ const rim = new THREE.DirectionalLight(0xffffff, 0.7);
 rim.position.set(4, 3, -5);
 scene.add(rim);
 
-const modelUrl = new URLSearchParams(location.search).get("m") ?? "/public/models/shoe.glb";
+const params = new URLSearchParams(location.search);
+const modelUrl = params.get("m") ?? "/public/models/shoe.glb";
+// ?turn=1: the shoe turns on a turntable (spec.rotationY), so its shadow needs a square ground.
+const turntable = params.get("turn") === "1";
 const gltf = await new GLTFLoader().loadAsync(modelUrl);
 const shoe = gltf.scene;
 let mesh;
@@ -113,7 +116,9 @@ function contactShadow({ width, depth, far, blur, opacity, resolution = 1024, co
   };
 }
 
-const shadow = contactShadow({ width: size.x * 1.2, depth: size.z * 1.9, far: 0.55, blur: 6, opacity: 0.7 });
+const shadow = turntable
+  ? contactShadow({ width: size.x * 1.25, depth: size.x * 1.25, far: 0.55, blur: 6, opacity: 0.7, resolution: 2048 })
+  : contactShadow({ width: size.x * 1.2, depth: size.z * 1.9, far: 0.55, blur: 6, opacity: 0.7 });
 scene.add(shadow.plane);
 
 /**
@@ -121,7 +126,16 @@ scene.add(shadow.plane);
  *         camera: [x,y,z], target: [x,y,z], fov }
  * Returns a PNG data URL with a transparent background.
  */
+// The shoe turns about the vertical axis through its centre (the turntable frames).
+const centre = box.getCenter(new THREE.Vector3());
+const pivot = new THREE.Group();
+pivot.position.set(centre.x, 0, centre.z);
+scene.add(pivot);
+pivot.add(shoe);
+shoe.position.set(-centre.x, 0, -centre.z);
+
 window.renderStill = (spec) => {
+  pivot.rotation.y = spec.rotationY ?? 0;
   SHOE_PARTS.forEach((part, i) => paint.setColor(i, spec.colors[part]));
   paint.glow(spec.highlight ? SHOE_PARTS.indexOf(spec.highlight) : -1, spec.highlight ? 0.45 : 0);
   shadow.update();
@@ -130,6 +144,28 @@ window.renderStill = (spec) => {
   camera.position.set(...spec.camera);
   camera.lookAt(new THREE.Vector3(...spec.target));
   renderer.render(scene, camera);
+  if (spec.box) {
+    // The frame as rendered, with the box round the shoe and its shadow (alpha above 24).
+    const c = document.createElement("canvas");
+    c.width = spec.width; c.height = spec.height;
+    const g = c.getContext("2d");
+    g.drawImage(renderer.domElement, 0, 0);
+    const image = g.getImageData(0, 0, c.width, c.height);
+    const { data } = image;
+    let x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+    for (let y = 0; y < c.height; y++)
+      for (let x = 0; x < c.width; x++) {
+        const a = (y * c.width + x) * 4 + 3;
+        // the shadow's faint tails (alpha 1 to 3) would draw a ghost of the ground's square on a light page
+        if (data[a] <= 3) { data[a - 3] = data[a - 2] = data[a - 1] = data[a] = 0; continue; }
+        if (data[a] > 24) {
+          if (x < x0) x0 = x; if (x > x1) x1 = x;
+          if (y < y0) y0 = y; if (y > y1) y1 = y;
+        }
+      }
+    g.putImageData(image, 0, 0);
+    return { png: c.toDataURL("image/png"), box: [x0, y0, x1 - x0 + 1, y1 - y0 + 1] };
+  }
   if (!spec.trim) return renderer.domElement.toDataURL("image/png");
 
   // Trim to the shoe and its shadow (alpha above a small threshold), keeping

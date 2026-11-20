@@ -67,14 +67,15 @@ pnpm lint    # check code quality
 pnpm build   # create a production build
 pnpm --filter web build:model    # rebuild the 3D shoe (needs Python with numpy, pillow, opencv-python-headless)
 pnpm --filter web build:stills   # re-render the shoe stills (needs Playwright and ffmpeg)
+pnpm --filter web build:turn     # re-render the home page's turn, 61 frames (needs Playwright and ffmpeg)
 pnpm --filter web build:logo     # rewrite the logo files and icons
 pnpm --filter web build:fonts    # copy the typefaces into public/fonts and write public/assets/fonts.css
 ```
 
 When the final 3D model arrives: tag its vertices with their part (a `_PART`
 attribute, as `build-shoe.py` does), set `MODEL_URL` in
-`src/features/configurator/parts.ts`, then run `build:stills` so every picture
-on the home page shows the real shoe.
+`src/features/configurator/parts.ts`, then run `build:stills` and `build:turn`
+so every picture on the home page shows the real shoe.
 
 ## Deployment
 

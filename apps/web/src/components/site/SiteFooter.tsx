@@ -82,6 +82,13 @@ export function SiteFooter({ lang, dict, page, alternate }: SiteFooterProps) {
           </div>
         </div>
       </div>
+      {/* The name, across the whole width: the page signs off (jianova.css: .footer__wordmark).
+          Outside the kit's two-row closing grid, so it adds to the footer instead of squeezing it. */}
+      <div className="footer__wordmark" aria-hidden="true">
+        <div className="wrap">
+          <Logo decorative />
+        </div>
+      </div>
     </footer>
   );
 }

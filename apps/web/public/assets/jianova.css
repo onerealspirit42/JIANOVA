@@ -59,6 +59,16 @@ html[lang="ar"] body { line-height: 1.75; }
 .swatch__dot { width: 20px; height: 20px; flex: none; border-radius: 999px; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--p-ink) 25%, transparent), 0 0 0 1px color-mix(in oklab, var(--p-bg) 40%, transparent); }
 .swatch:has(input:checked) { border-color: var(--ink); background: color-mix(in oklab, var(--ink) 10%, transparent); }
 .color-frame { background: var(--p-bg); border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 4 / 3; }
+/* On the purple band the shoe stands in a pool of light tinted by the chosen colour
+   (ColorPicker.tsx sets --glow); the tint follows a choice over a second. */
+@property --glow { syntax: "<color>"; inherits: false; initial-value: #241039; }
+#colors .color-frame {
+  background: radial-gradient(farthest-side at 50% 58%,
+    color-mix(in oklab, var(--glow) 34%, #c9b9ea) 0%,
+    color-mix(in oklab, color-mix(in oklab, var(--glow) 34%, #c9b9ea) 55%, transparent) 46%,
+    transparent 92%);
+  transition: --glow 1100ms var(--lux-ease);
+}
 .color-frame img { width: 100%; height: 100%; object-fit: contain; }
 
 /* --------------------------------------------------------------- brand */
@@ -100,14 +110,17 @@ main #steps[data-moment].is-live > .mo-pc__grid { align-content: start; padding-
   #parts .part-frame { aspect-ratio: 4 / 5; }
 }
 
-/* Phone: shorter pictures, and two screens where the content is taller than one. */
+/* Phone: every section as tall as what it holds (the kit's screen-per-section left empty
+   screens on a phone); the turn, the steps and the statement fill the screen instead.
+   Pictures run edge to edge, and the colours show the shoe first, then the swatches. */
 @media (max-width: 639px) {
-  .color-frame { aspect-ratio: 16 / 9; }
-  #parts .part-frame { aspect-ratio: 16 / 9; }
+  main > :is(section, .section):not(.hero, .section--hero, [data-moment]), footer.closing { min-height: 0; }
   .swatch { min-height: 44px; }
   .swatches { gap: 6px; }
-  main > #steps[data-moment]:not(.is-live) { min-height: calc(2 * 100lvh); }
-  #questions, footer.closing { --hm: 2; }
+  #parts .grid { row-gap: 6px; }
+  #parts .part-frame { aspect-ratio: 4 / 3; margin-inline: calc(-1 * var(--gut)); border-radius: 0; }
+  #colors .color-frame { order: -1; aspect-ratio: 4 / 3; margin-inline: calc(-1 * var(--gut)); margin-bottom: var(--s-4); border-radius: 0; }
+  main > #steps[data-moment]:not(.is-live) { min-height: 0; }
 }
 
 /* ------------------------------------------------------- refinements */
@@ -285,18 +298,27 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
    own entrance and the two moments their own motion; reduced motion, print
    and pages without script show everything at rest. */
 @media (prefers-reduced-motion: no-preference) {
-  /* Out of sight at once (no transition on the way out), then the arrival eases in. */
-  html:not([data-motion="off"]) .rv { opacity: 0; translate: 0 28px; }
+  /* Out of sight at once (no transition on the way out), then the arrival eases in. Words
+     rise 56px; a picture opens out of a smaller frame as it rises; the closing name climbs
+     out from behind its own edge. */
+  html:not([data-motion="off"]) .rv { opacity: 0; translate: 0 56px; }
+  html:not([data-motion="off"]) .rv:is(.part-frame, .color-frame, .phone-shot, .meaning-frame, .tile) { translate: 0 88px; scale: .9; clip-path: inset(9% 7%); }
+  /* (never clipped away entirely: an observer counts a clipped box as off screen) */
+  html:not([data-motion="off"]) .rv.footer__wordmark { translate: 0 64px; clip-path: inset(0 0 40% 0); }
   html:not([data-motion="off"]) .rv.is-in {
-    opacity: 1; translate: none;
-    transition: opacity 1000ms var(--lux-ease) var(--rv-delay, 0ms), translate 1200ms var(--lux-ease) var(--rv-delay, 0ms);
+    opacity: 1; translate: none; scale: none; clip-path: inset(0);
+    transition:
+      opacity 1000ms var(--lux-ease) var(--rv-delay, 0ms),
+      translate 1400ms var(--lux-ease) var(--rv-delay, 0ms),
+      scale 1400ms var(--lux-ease) var(--rv-delay, 0ms),
+      clip-path 1400ms var(--lux-ease) var(--rv-delay, 0ms);
   }
   /* Pictures fade in as they arrive instead of appearing line by line. */
   html:not([data-motion="off"]) img.is-loading { opacity: 0; }
   html:not([data-motion="off"]) img.is-arrived { transition: opacity 900ms var(--lux-ease); }
 }
 @media print {
-  .rv, img.is-loading { opacity: 1 !important; translate: none !important; }
+  .rv, img.is-loading { opacity: 1 !important; translate: none !important; scale: none !important; clip-path: none !important; }
 }
 
 /* The designer's panel opens in a soft cascade as the page arrives. */
@@ -308,3 +330,152 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   html:not([data-motion="off"]) .designer__panel > :nth-child(n + 5) { animation-delay: 280ms; }
 }
 @keyframes jv-rise { from { opacity: 0; translate: 0 14px; } }
+
+/* ------------------------------------------------------------ the turn
+   The first screen is also the start of the turn (TurnHero.tsx): when it is
+   live the section is three and a half screens tall and its stage (.turn__pin)
+   holds while the words scroll away, the stage turns into a lit studio and the
+   shoe, drawn on a canvas, grows and turns a full circle. Still (no script,
+   reduced motion): one screen, the words and frame 0, as the kit's product hero. */
+main > .hero.turn { height: auto; min-height: 0; padding: 0; display: block; }
+.turn__pin {
+  position: relative; isolation: isolate; overflow: clip;
+  min-height: 100vh; min-height: 100svh;
+  padding: calc(var(--nav) + var(--hgap)) 0 calc(var(--hpadb) + var(--bar));
+  display: flex; flex-direction: column;
+}
+.turn__pin > .wrap { position: relative; z-index: 2; flex: 1 1 auto; display: flex; flex-direction: column; }
+.turn__pin > .wrap > .hero-text { flex: 1 1 auto; }
+.turn .hero__head { will-change: transform, opacity; }
+/* the still is frame 0: laid out by cover (TurnHero reads the same numbers to start the canvas on it) */
+.hero--product .hero__stage > img.turn__still { object-fit: cover; object-position: 50% 46%; padding: 0; }
+.turn__ground {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: var(--turn-dark, 0);
+  background: radial-gradient(ellipse 72% 58% at 50% 55%, #5d438c 0%, #301a4d 44%, #150a22 100%);
+}
+.turn__canvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: 0; }
+.turn__captions, .turn__looks { display: none; }
+main > .hero.turn.is-live { height: calc(100vh + 250vh); height: calc(100svh + 250svh); }
+.turn.is-live .turn__pin { position: sticky; top: 0; height: 100vh; height: 100svh; min-height: 0; }
+.turn.is-live .hero__stage { min-height: 160px; }
+.turn.is-live .turn__captions { display: block; position: absolute; z-index: 3; inset-inline: var(--gut); top: 13%; pointer-events: none; text-align: center; }
+.turn__cap {
+  position: absolute; inset-inline: 0; top: 0; margin: 0 auto; max-width: 14ch; opacity: 0;
+  font: var(--display-weight) clamp(38px, 5.4vw, 88px) / 1.04 var(--font-display); letter-spacing: var(--display-tracking);
+  color: #fff; text-wrap: balance; will-change: transform, opacity;
+}
+html[lang="ar"] .turn__cap { line-height: 1.3; letter-spacing: 0; }
+/* on a wide screen each caption keeps to one line, clear of the shoe as it grows (laptops included) */
+@media (min-width: 1024px) { .turn__cap { max-width: 26ch; } }
+.turn.is-live .turn__looks {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: var(--s-3) var(--s-5);
+  position: absolute; z-index: 3; inset-inline: var(--gut); bottom: 6%;
+  margin: 0; padding: 0; list-style: none; opacity: 0; pointer-events: none;
+  color: #fff; font-size: 14px; line-height: 1.3;
+}
+.turn__looks li { display: flex; align-items: center; gap: var(--s-2); opacity: .45; transition: opacity 400ms var(--lux-ease); }
+.turn__looks li.is-on { opacity: 1; }
+.turn__dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px rgb(255 255 255 / .55); transition: transform 400ms var(--lux-ease); }
+.turn__looks li.is-on .turn__dot { transform: scale(1.4); }
+@media (max-width: 639px) {
+  .turn.is-live .turn__captions { top: 12%; }
+  .turn__cap { max-width: 11ch; }
+  /* above the phone's action bar (64px), which shows once the hero's button has scrolled away */
+  .turn.is-live .turn__looks { bottom: calc(64px + env(safe-area-inset-bottom) + 3.5%); gap: var(--s-2) var(--s-4); font-size: 13px; }
+}
+/* While the studio is dark, the header and the phone's action bar turn to dark glass, so the
+   stage runs from edge to edge (html.is-studio, set by TurnHero.tsx; the open menu keeps its
+   paper). Under the stage, the section darkens with it: on a phone whose toolbar has folded
+   away the screen is taller than the stage (100svh), and that last strip shows the section. */
+main > .hero.turn.is-live { background-color: color-mix(in oklab, #1a0d2b calc(var(--turn-dark, 0) * 100%), var(--p-bg)); }
+.nav { transition: background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease), color 400ms var(--lux-ease); }
+.nav__toggle { transition: color 400ms var(--lux-ease), border-color 400ms var(--lux-ease); }
+html.is-studio .nav:not(.is-open) {
+  --bg: var(--p-inv-bg); --ink: var(--p-inv-ink); --muted: var(--p-inv-muted);
+  --accent: var(--p-inv-accent); --accent-ink: var(--p-inv-accent-ink);
+  --action: var(--p-inv-action); --action-ink: var(--p-inv-action-ink);
+  --line: color-mix(in oklab, var(--p-inv-ink) 14%, transparent); --line-strong: color-mix(in oklab, var(--p-inv-ink) 30%, transparent);
+  background: color-mix(in oklab, #120820 58%, transparent);
+  border-bottom-color: color-mix(in oklab, var(--p-inv-ink) 10%, transparent);
+}
+html.is-studio .nav:not(.is-open) .btn--primary:hover { background: color-mix(in oklab, var(--action) 88%, var(--p-inv-bg)); }
+@media (prefers-reduced-transparency: reduce) {
+  html.is-studio .nav:not(.is-open) { background: #120820; }
+}
+@media (max-width: 639px) {
+  html.is-studio .actionbar { --action: var(--p-inv-action); --action-ink: var(--p-inv-action-ink); background: transparent; border-top-color: transparent; }
+}
+/* (the kit's own transitions, with the colours added; reduced motion keeps the kit's none) */
+@media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
+  .actionbar { transition: transform 240ms var(--ease), visibility 0s, background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease); }
+}
+@media print {
+  main > .hero.turn.is-live { height: auto; }
+  .turn.is-live .turn__pin { position: static; height: auto; }
+  .turn__canvas, .turn__captions, .turn__looks, .turn__ground { display: none !important; }
+}
+
+/* ------------------------------------------------------------ steps, live everywhere
+   The chapters run on phones and tablets too (moments/pinned-chapters/moment.js): the
+   picture fills the top of the screen, edge to edge, the open step under it. Each step's
+   line fills as its part of the scroll goes by (--mo-step-p). The moment's own CSS loads
+   after this file, so these rules carry #steps. */
+#steps .mo-pc__step { padding-left: 0; padding-inline-start: var(--s-5); border-left: 0; border-inline-start: 2px solid var(--line); position: relative; }
+#steps.is-live .mo-pc__step.is-on { border-inline-start-color: var(--line); }
+#steps.is-live .mo-pc__step.is-on::before {
+  content: ""; position: absolute; inset-inline-start: -2px; top: 0; width: 2px;
+  height: calc(var(--mo-step-p, 0) * 100%); background: var(--accent);
+}
+#steps .mo-pc__visuals { background: radial-gradient(ellipse 80% 70% at 50% 56%, #fff 0%, var(--p-surface) 72%); }
+main #steps[data-moment].is-live .mo-pc__visual { transform: translate3d(0, 8%, 0) scale(1.1); transition: opacity 650ms var(--lux-ease), transform 1200ms var(--lux-ease); }
+main #steps[data-moment].is-live .mo-pc__visual.is-on { transform: none; }
+main #steps[data-moment].is-live .mo-pc__visual.is-past { transform: translate3d(0, -8%, 0) scale(.94); }
+@media (min-width: 640px) {
+  #steps[data-moment]:not(.is-live) .mo-pc__step { border-inline-start: 0; padding-inline-start: 0; }
+}
+@media (max-width: 1023px) {
+  /* (overflow visible: the picture runs past the grid to the screen's edges) */
+  main #steps[data-moment].is-live > .mo-pc__grid {
+    grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto;
+    align-content: stretch; align-items: stretch; row-gap: var(--s-5); overflow: visible;
+    padding-top: var(--nav); padding-bottom: calc(64px + env(safe-area-inset-bottom) + var(--s-5));
+  }
+  main #steps[data-moment].is-live .mo-pc__visuals { grid-row: 1; width: auto; height: 100%; max-height: none; aspect-ratio: auto; margin-inline: calc(-1 * var(--gut)); border-radius: 0; }
+  main #steps[data-moment].is-live .mo-pc__visual > img { object-fit: contain; }
+  main #steps[data-moment].is-live .mo-pc__text { grid-row: 2; gap: var(--s-4); }
+  main #steps[data-moment].is-live .mo-pc__steps { gap: var(--s-3); }
+  main #steps[data-moment].is-live h2 { font-size: clamp(26px, 6.6vw, 36px); }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  main #steps[data-moment].is-live > .mo-pc__grid { padding-bottom: var(--s-7); }
+}
+
+/* ------------------------------------------------------------ statement, held
+   The statement holds in the middle of the screen while the section scrolls past, and
+   its words light one by one (moments/word-highlight/moment.js, opts.pin); on a phone
+   the type is set large enough to fill the screen. */
+main > #idea.is-pinned { height: calc(100vh + 130vh); height: calc(100svh + 130svh); min-height: 0; padding: 0; display: block; }
+#idea.is-pinned > .wrap {
+  position: sticky; top: 0; height: 100vh; height: 100svh;
+  display: flex; flex-direction: column; justify-content: center; gap: var(--s-5);
+  padding-top: var(--nav); padding-bottom: var(--s-6);
+}
+#idea .mo-wh .mo-w { color: color-mix(in oklab, var(--ink) 22%, var(--bg)); }
+#idea .mo-wh .mo-w.is-on { color: var(--ink); }
+#idea .mo-wh strong .mo-w.is-on { color: var(--accent); }
+@media (max-width: 639px) {
+  #idea .mo-wh__text { font-size: clamp(32px, 8.8vw, 42px); line-height: 1.16; }
+  html[lang="ar"] #idea .mo-wh__text { line-height: 1.4; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #idea .mo-wh .mo-w { color: var(--ink); }
+  #idea .mo-wh strong .mo-w { color: var(--accent); }
+}
+
+/* ------------------------------------------------------------ the closing name */
+/* The closing screen keeps its one screen (the close, then the links); the name follows under it. */
+footer.closing:has(> .footer__wordmark) { height: auto; min-height: 100vh; min-height: 100svh; }
+footer.closing:has(> .footer__wordmark) > .wrap { height: auto; min-height: calc(100svh - var(--padt) - var(--padb) - var(--bar)); }
+footer.closing > .footer__wordmark { flex: none; margin-top: var(--s-8); color: var(--accent); }
+.footer__wordmark svg { display: block; width: 100%; height: auto; }
+@media (max-width: 639px) { footer.closing > .footer__wordmark { margin-top: var(--s-7); } }

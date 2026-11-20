@@ -55,6 +55,14 @@
       "secondary": "See the colors",
       "alt": "The JIANOVA knit running shoe from the side: a deep purple upper, white laces and a white sole"
     },
+    "turn": {
+      "captions": [
+        "From every angle",
+        "Seven parts, eight colors",
+        "Then make it yours"
+      ],
+      "looksLabel": "The colorways the shoe turns through"
+    },
     "parts": {
       "title": "7 parts of the shoe to color",
       "lead": "The knit upper, laces, pull tabs, lining, heel patch, midsole and outsole each take their own color, so the details can match or stand apart.",

@@ -12,9 +12,9 @@
  * Plain JavaScript (no build step) so the stills page can import it as is.
  */
 import { Color, MeshPhysicalMaterial } from "three";
+import { SHOE_PARTS } from "./shoe-parts.js";
 
-/** Parts in the model's order; must match PART_IDS in parts.ts. */
-export const SHOE_PARTS = ["upper", "tabs", "laces", "lining", "heel", "midsole", "outsole"];
+export { SHOE_PARTS };
 
 /** Fabric sheen per part (0 = none): knit, tabs, laces and lining are textiles. */
 const SHEEN = [0.24, 0.24, 0.22, 0.16, 0, 0, 0];

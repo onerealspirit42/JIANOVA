@@ -23,6 +23,7 @@ const REVEAL = [
   `${SECTION} .meaning-frame`,
   "footer.closing .closing__cta > *",
   "footer.closing .closing__links > .grid > *",
+  "footer.closing .footer__wordmark",
 ].join(", ");
 
 /** Pictures that fade in as they arrive (the rest are in view at once or belong to a moment). */
@@ -49,8 +50,8 @@ const SPECULATION_RULES = {
   ],
 };
 
-/** How long a reveal takes (jianova.css: 1200 ms) plus room for its delay. */
-const REVEAL_MS = 1300;
+/** How long a reveal takes (jianova.css: 1400 ms) plus room for its delay. */
+const REVEAL_MS = 1500;
 
 /**
  * Loads the kit's scripts once React has hydrated the page. The scripts
@@ -135,6 +136,43 @@ export function KitScripts() {
     return () => spy.disconnect();
   }, []);
 
+  // Pictures marked data-parallax drift inside their frames as the page scrolls past them.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "off") return;
+    const pictures = [...document.querySelectorAll<HTMLElement>("[data-parallax]")];
+    if (!pictures.length || !("IntersectionObserver" in window)) return;
+    const near = new Set<HTMLElement>();
+    let raf = 0;
+    const tick = () => {
+      raf = 0;
+      const vh = window.innerHeight;
+      near.forEach((el) => {
+        const r = (el.parentElement ?? el).getBoundingClientRect();
+        const p = Math.max(-1, Math.min(1, (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2)));
+        el.style.transform = `translate3d(0, ${(p * 6).toFixed(2)}%, 0) scale(1.14)`;
+      });
+    };
+    const request = () => {
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => (e.isIntersecting ? near.add(e.target as HTMLElement) : near.delete(e.target as HTMLElement)));
+        request();
+      },
+      { rootMargin: "15% 0px" },
+    );
+    pictures.forEach((el) => io.observe(el));
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", request);
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", request);
+      window.removeEventListener("resize", request);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
   useEffect(() => {
     const root = document.documentElement;
     if (
@@ -158,7 +196,7 @@ export function KitScripts() {
           const el = entry.target as HTMLElement;
           reveal.unobserve(el);
           // Blocks arriving together step in one after another.
-          const delay = Math.min(order++, 4) * 90;
+          const delay = Math.min(order++, 4) * 110;
           el.style.setProperty("--rv-delay", `${delay}ms`);
           el.classList.add("is-in");
           // Once in place, the block goes back to its own styles (its hovers, its transitions).

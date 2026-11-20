@@ -7,7 +7,8 @@
  * shoe-material.js colours the parts on the GPU. To use another model, tag its
  * vertices the same way (a `_PART` attribute) and point MODEL_URL at it.
  */
-import { SHOE_PARTS } from "./shoe-material.js";
+// (from its own module: the material would bring three.js into every page that lists the parts)
+import { SHOE_PARTS } from "./shoe-parts.js";
 
 export const MODEL_URL = "/models/shoe.glb";
 

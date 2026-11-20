@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { COLOR_IDS, COLORS, type ColorId } from "@/features/configurator/parts";
 
 type ColorPickerProps = {
@@ -86,7 +86,14 @@ export function ColorPicker({ legend, alt, names, initial = "royal" }: ColorPick
           ))}
         </fieldset>
       </div>
-      <div ref={frame} className="span-6 start-7 color-frame" role="img" aria-label={alt.replace("{color}", name)}>
+      <div
+        ref={frame}
+        className="span-6 start-7 color-frame"
+        role="img"
+        aria-label={alt.replace("{color}", name)}
+        // the light the shoe stands in takes a tint of the chosen colour (jianova.css)
+        style={{ "--glow": COLORS[color] } as CSSProperties}
+      >
         {mounted.map((id) => (
           <img
             key={id}

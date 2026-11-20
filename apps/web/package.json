@@ -9,6 +9,7 @@
     "lint": "eslint",
     "build:model": "python3 scripts/model/build-shoe.py",
     "build:stills": "node scripts/stills/render-stills.mjs",
+    "build:turn": "node scripts/stills/render-turn.mjs",
     "build:logo": "node scripts/brand/build-logo.mjs",
     "build:fonts": "node scripts/fonts/build-fonts.mjs"
   },

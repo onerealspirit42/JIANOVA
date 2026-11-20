@@ -61,6 +61,8 @@ A model made of separate meshes per part can be tagged by the build script
 2. In `apps/web/src/features/configurator/parts.ts`, set `MODEL_URL` to the new
    path and `IS_STAND_IN_MODEL` to `false` (this removes the stand-in notice),
    and remove the model credit from the footer if the stand-in is gone.
-3. Run `pnpm --filter web build:stills` to re-render the home page's pictures
-   from the new model (the cameras are in `apps/web/scripts/stills/render-stills.mjs`).
+3. Run `pnpm --filter web build:stills` and `pnpm --filter web build:turn` to
+   re-render the home page's pictures and its turning shoe from the new model
+   (the cameras are in `apps/web/scripts/stills/render-stills.mjs` and
+   `render-turn.mjs`).
 4. Run the browser tests and review the shoe from every angle.
