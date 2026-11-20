@@ -165,7 +165,7 @@ html[lang="ar"] .hero h1 { line-height: 1.2; font-size: calc(var(--ly-h1) * .9);
   --ease: cubic-bezier(.22, 1, .36, 1);
   --dur: 260ms;
   --m-in: 150ms;
-  --m-out: 240ms;
+  --m-out: 150ms;
   --m-press: 140ms;
   --m-panel: 320ms;
   --m-close: 220ms;
