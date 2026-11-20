@@ -68,6 +68,9 @@ html[lang="ar"] body { line-height: 1.75; }
 .logo-frame--icon svg { width: auto; height: 40%; }
 .diagram-frame { display: grid; place-items: center; aspect-ratio: 5 / 4; padding: 6%; border-radius: var(--r-lg); background: var(--p-surface); color: var(--p-accent); }
 .diagram-frame .brand-diagram { width: 100%; height: auto; }
+/* Meaning: the star large on the quiet ground, no panel (no grey on grey). */
+.meaning-frame { display: grid; place-items: center; align-self: center; color: var(--p-accent); }
+.meaning-frame .brand-diagram { width: min(100%, 520px); height: auto; }
 #use .rows > li { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
 #use .rows__value { text-align: start; white-space: normal; }
 .color-chip { display: inline-block; width: 20px; height: 20px; border-radius: 6px; vertical-align: -4px; margin-inline-end: var(--s-2); box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 40%, transparent); }

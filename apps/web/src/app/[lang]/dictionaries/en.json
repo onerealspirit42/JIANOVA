@@ -142,18 +142,43 @@
   "brand": {
     "hero": {
       "title": "The JIANOVA logo and colors",
-      "lead": "The star is drawn from the A in the wordmark, the one without a crossbar, and split into a pair. Download the files and use them as this page shows.",
+      "lead": "The star is drawn from the A in the wordmark, the one without a crossbar: four A’s, parted by two crossing lines. Download the files and use them as this page shows.",
       "primary": "Download the logo",
       "secondary": "See the colors",
-      "alt": "The JIANOVA logo: a four-pointed star in two halves beside the wordmark"
+      "alt": "The JIANOVA logo: a four-pointed star parted by two crossing lines, beside the wordmark"
     },
     "star": {
-      "title": "Four A’s and a pair",
-      "text": "Each point has the angle of the wordmark’s A, 38.6 degrees at the tip, and each side curves smoothly in to the next point. The star is split into two halves, the right one a step ahead: a pair, mid-stride.",
-      "diagramLabel": "Diagram: the letter A of the wordmark with its 38.6 degree tip, four copies of it forming a star, and the star split into two halves, one a step higher",
+      "title": "A star of four A’s, apart at the centre",
+      "text": "Each point has the angle of the wordmark’s A, 38.6 degrees at the tip, and each side curves smoothly in to the next point. Two lines cross at the centre and part the four points, slanted to the star’s own proportions: 7 down for every 10 across.",
+      "diagramLabel": "Diagram: the letter A of the wordmark with its 38.6 degree tip, four copies of it forming a star, and the star parted into four points by two crossing lines",
       "theA": "The A",
       "four": "Four A’s",
-      "star": "A pair"
+      "star": "Apart at the centre"
+    },
+    "meaning": {
+      "title": "What the star means",
+      "lead": "Two lines cross inside the star and part it into four points. Together they describe a run.",
+      "rows": [
+        {
+          "name": "Two crossing lines",
+          "text": "A runner’s legs seen from the side, at the moment one passes the other. It happens in every stride."
+        },
+        {
+          "name": "Four points",
+          "text": "The four moments of a stride: the foot lands, carries your weight, pushes off, then flies forward through the air."
+        },
+        {
+          "name": "The long vertical points",
+          "text": "A guiding star, like the stars that travellers crossed the deserts of Arabia by. Nova is the Latin word astronomers use for a new star."
+        }
+      ],
+      "diagramLabel": "Diagram: the star with its two crossing lines drawn through the gaps, and its four points named for the moments of a stride: landing, support, push-off and flight",
+      "phases": {
+        "landing": "Landing",
+        "support": "Support",
+        "pushOff": "Push-off",
+        "flight": "Flight"
+      }
     },
     "files": {
       "title": "Logo files",

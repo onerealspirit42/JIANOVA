@@ -1,13 +1,13 @@
 /**
  * The JIANOVA star: four points, each with the 38.6 degree tip of the
- * wordmark's A (the A has no crossbar), joined by smooth curves, and split
- * into two halves with the right one a step higher: a pair, mid-stride.
- * From scripts/brand/build-logo.mjs, on a 70 x 105 box.
+ * wordmark's A (the A has no crossbar), parted at the centre by two crossing
+ * lines: four A's, a runner's legs crossing mid-stride.
+ * From scripts/brand/build-logo.mjs, on a 70 x 100 box.
  */
 export const STAR_PATH =
-  "M33.20,99.88 C20.87,65.06 17.52,61.13 0.00,55.00 C17.52,48.87 20.87,44.94 33.20,10.12 Z M36.80,5.12 C49.13,39.94 52.48,43.87 70.00,50.00 C52.48,56.13 49.13,60.06 36.80,94.88 Z";
+  "M19.48,37.00 C24.09,30.22 28.22,19.37 35.00,0.00 C41.78,19.37 45.91,30.22 50.52,37.00 L35.00,47.86 Z M52.63,39.79 C56.93,44.85 61.98,47.19 70.00,50.00 C61.98,52.81 56.93,55.15 52.63,60.21 L38.05,50.00 Z M50.52,63.00 C45.91,69.78 41.78,80.63 35.00,100.00 C28.22,80.63 24.09,69.78 19.48,63.00 L35.00,52.14 Z M17.37,60.21 C13.07,55.15 8.02,52.81 0.00,50.00 C8.02,47.19 13.07,44.85 17.37,39.79 L31.95,50.00 Z";
 export const STAR_WIDTH = 70;
-export const STAR_HEIGHT = 105;
+export const STAR_HEIGHT = 100;
 
 type StarMarkProps = {
   className?: string;

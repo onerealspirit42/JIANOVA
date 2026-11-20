@@ -27,8 +27,10 @@ Early development stage. What exists today:
   - `/customize` – the 3D designer: rotate, zoom, and change the color of each part
   - `/brand` – the visual identity: the logo, its files, colors, type and usage rules
 - The JIANOVA logo: a four-pointed star built from the wordmark's A (the A has no
-  crossbar) and split into two halves, a pair mid-stride, beside the wordmark.
-  Files in `apps/web/public/brand/`.
+  crossbar), parted at the centre by two crossing lines, beside the wordmark.
+  The lines are a runner's legs crossing mid-stride, the four points the four
+  moments of a stride (landing, support, push-off, flight). Files in
+  `apps/web/public/brand/`.
 - Designs can be saved and shared: the designer keeps the colors in the page address.
 
 The shoe shown is a procedurally generated **placeholder**, not the product.

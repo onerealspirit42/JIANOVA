@@ -20,7 +20,7 @@ type LogoProps = {
 export function Logo({ className, decorative = false, layout = "horizontal" }: LogoProps) {
   const clipId = `logo-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const stacked = layout === "stacked";
-  // Star box: 70 x 105 units, scaled to the lockup's star height.
+  // Star box: 70 x 100 units, scaled to the lockup's star height.
   const starH = stacked ? 64 : 48;
   const starScale = starH / STAR_HEIGHT;
   const starW = STAR_WIDTH * starScale;
