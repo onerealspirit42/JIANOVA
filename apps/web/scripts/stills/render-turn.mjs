@@ -32,7 +32,7 @@ import { createRequire } from "node:module";
 
 const WEB = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 /** A new folder whenever the frames change their angles, so no browser mixes old frames it kept with new ones. */
-const DIR = "/images/shoe/spin241";
+const DIR = "/images/shoe/spin241mb";
 const OUT = join(WEB, "public", DIR);
 const args = process.argv.slice(2);
 const opt = (name, fallback) => {
@@ -41,8 +41,8 @@ const opt = (name, fallback) => {
 };
 const FRAMES = Number(opt("frames", "241")); // 0..360 degrees inclusive: the last frame is the side view again
 /** Renders averaged into each frame, and the share of one step between frames that they span. */
-const BLUR = Number(opt("blur", "4"));
-const SHUTTER = Number(opt("shutter", "0.5"));
+const BLUR = Number(opt("blur", "6"));
+const SHUTTER = Number(opt("shutter", "1"));
 /** Frames per 6 degrees: the colour changes below are written for one frame every 6 degrees. */
 const U = (FRAMES - 1) / 60;
 const [W, H] = opt("size", "1400x1050").split("x").map(Number);

@@ -72,7 +72,68 @@ const REVEAL_MS = 1000;
  * into place as they come into view, and pictures fade in as they load; and
  * it lets the browser fetch the next page ahead of the click.
  */
+/** The studio's colour at the foot of the screen (jianova.css, .turn__ground: its gradient there). */
+const STUDIO_FOOT = [32, 16, 51] as const;
+
+/** An rgb()/rgba() colour as [r, g, b, a] (null for anything else). */
+function rgba(css: string): [number, number, number, number] | null {
+  const m = css.match(/rgba?\(([^)]+)\)/);
+  if (!m) return null;
+  const v = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+  return v.length >= 3 && v.every((n) => !Number.isNaN(n)) ? [v[0], v[1], v[2], v[3] ?? 1] : null;
+}
+
 export function KitScripts() {
+  // The strip under Safari's address bar (iOS 26) takes the page's background colour, so a light
+  // strip sat under the dark sections. The page's own background follows whatever is at the foot of
+  // the screen (the sections carry their own light ground, jianova.css), so the strip always
+  // continues the page above it. theme-color follows too, for browsers that still read it.
+  useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const base = rgba(getComputedStyle(body).backgroundColor) ?? [250, 249, 251, 1];
+    const css = (c: readonly number[]) => `rgb(${c.slice(0, 3).map((n) => Math.round(n)).join(", ")})`;
+    const footColour = (): readonly number[] => {
+      const x = window.innerWidth / 2, y = window.innerHeight - 2;
+      const turn = document.querySelector<HTMLElement>(".turn.is-live");
+      if (turn) {
+        const pin = turn.querySelector<HTMLElement>(".turn__pin")!.getBoundingClientRect();
+        const ground = parseFloat(turn.querySelector<HTMLElement>(".turn__ground")?.style.opacity || "0");
+        if (pin.top <= y && pin.bottom >= y && ground > 0.01) return base.map((v, i) => (i < 3 ? v + (STUDIO_FOOT[i] - v) * ground : 1));
+      }
+      for (const el of document.elementsFromPoint(x, y)) {
+        if (el === body || el === root) break;
+        if (el.closest(".nav")) continue;
+        const c = rgba(getComputedStyle(el).backgroundColor);
+        if (c && c[3] > 0.5) return c;
+      }
+      return base;
+    };
+    let last = "";
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const c = css(footColour());
+      if (c === last) return;
+      last = c;
+      body.style.backgroundColor = root.style.backgroundColor = c;
+      meta?.setAttribute("content", c);
+    };
+    const request = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", request);
+    update();
+    return () => {
+      window.removeEventListener("scroll", request);
+      window.removeEventListener("resize", request);
+      if (raf) cancelAnimationFrame(raf);
+      body.style.backgroundColor = root.style.backgroundColor = "";
+    };
+  }, []);
+
   useEffect(() => {
     const root = document.documentElement;
     if (root.dataset.kitLoaded) return;

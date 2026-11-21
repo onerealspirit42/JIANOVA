@@ -567,3 +567,9 @@ footer.closing > .footer__wordmark { flex: none; margin-top: var(--s-8); color: 
 @media (max-width: 639px) {
   footer.closing:has(> .footer__wordmark), footer.closing:has(> .footer__wordmark) > .wrap { min-height: 0; }
 }
+
+/* ------------------------------------------------------------ the page's own ground
+   The page and the close carry the light ground themselves, so the body's colour shows nowhere on
+   the page: KitScripts.tsx sets it to whatever is at the foot of the screen, which Safari (iOS 26)
+   copies into the strip under its address bar. */
+main, body > footer { background-color: var(--bg); }

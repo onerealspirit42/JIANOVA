@@ -43,7 +43,7 @@ const CROP_PAD = 14;
  * own thread in Safari and on phones), and the turn eases after it, so a wheel's steps and a
  * finger's jumps between scroll events become one gliding movement.
  */
-const CATCH_UP = 0.06;
+const CATCH_UP = 0.03;
 /** Once the scroll has rested this long (ms), the turn settles on the nearest whole frame. */
 const SETTLE_AFTER = 160;
 /**
@@ -284,14 +284,18 @@ export function TurnHero(props: TurnHeroProps) {
 
       // The frames to show: two neighbours dissolving in the middle of the step between them, or,
       // while the frames still arrive, the nearest one there is.
-      const lo = Math.floor(fpos);
-      const hi = Math.min(count - 1, lo + 1);
-      const pair = hi !== lo && frames[lo] !== null && frames[hi] !== null;
+      // While frames still arrive, the nearest ones on either side dissolve across the gap between
+      // them, so a turn that is still loading glides instead of jumping from frame to frame.
+      let lo = Math.floor(fpos);
+      let hi = Math.min(count - 1, lo + 1);
+      while (lo > 0 && !frames[lo]) lo--;
+      while (hi < count - 1 && !frames[hi]) hi++;
+      const pair = hi !== lo && frames[lo] !== null && frames[hi] !== null && hi - lo <= 24;
       const a = pair ? lo : nearest(Math.round(fpos));
       const b = pair ? hi : a;
       // (frames 1.5 degrees apart, each already blurred by its own motion, dissolve through most of
-      // each step, so the turn reads as one movement)
-      const t = pair ? smooth(0.12, 0.88, fpos - lo) : 0;
+      // each step, so the turn reads as one movement; across a wider gap, evenly)
+      const t = !pair ? 0 : hi - lo === 1 ? smooth(0.12, 0.88, fpos - lo) : clamp((fpos - lo) / (hi - lo));
 
       // At rest the sharp still shows; once the page moves (and a frame is ready), the canvas takes over.
       const atRest = p * run < 1 || a < 0;
@@ -376,7 +380,7 @@ export function TurnHero(props: TurnHeroProps) {
       const frameAt = clamp((shown - TURN_FROM) / (TURN_TO - TURN_FROM)) * (count - 1);
       const resting = shown === raw && now - lastScroll > SETTLE_AFTER;
       const settleTo = resting ? Math.round(frameAt) - frameAt : 0;
-      settle += (settleTo - settle) * ease(dt, 0.08);
+      settle += (settleTo - settle) * ease(dt, 0.05);
       if (Math.abs(settleTo - settle) < 0.003) settle = settleTo;
       // the sharp frame fades in once the turn stands on a whole frame, and goes at once when it moves
       const sharpTo = resting && settle === settleTo && soft() ? 1 : 0;
@@ -487,7 +491,7 @@ export function TurnHero(props: TurnHeroProps) {
     const startLoading = () => {
       if (started) return;
       started = true;
-      for (let n = 0; n < (small ? 6 : 8); n++) loadNext();
+      for (let n = 0; n < (small ? 10 : 12); n++) loadNext();
     };
 
     // The words sit over the stage, outside it, so the still waits under them as before: their height
@@ -525,7 +529,7 @@ export function TurnHero(props: TurnHeroProps) {
     };
     canvas.addEventListener("contextrestored", onRestored);
     window.addEventListener("scroll", startLoading, { once: true, passive: true });
-    const idleStart = window.setTimeout(startLoading, 1200);
+    const idleStart = window.setTimeout(startLoading, 300);
     measure();
     request();
     document.fonts?.ready.then(() => {
