@@ -574,6 +574,25 @@ footer.closing > .footer__wordmark { flex: none; margin-top: var(--s-8); color: 
    copies into the strip under its address bar. */
 main, body > footer { background-color: var(--bg); }
 
-/* Nothing is fixed at the foot of the page: Safari (iOS 26 and later) takes the colour under its
-   address bar from a fixed element at the bottom edge, so with none the page runs under it, edge to
-   edge. (The header at the top keeps its own glass, which Safari carries up behind the status bar.) */
+/* The header is solid (no page showing through it), and so is the strip above it under the status
+   bar; the bottom has no strip at all, the page running under Safari's address bar as on Wikipedia.
+   Safari (iOS 26 and later) lays the background colour of a fixed element at the top edge under
+   both its bars, the address bar included, but never a pseudo-element's: so the header's own
+   background is clear and its solid paper is drawn by its ::before, reaching up under the status
+   bar. Nothing else is fixed. In the studio the paper turns to the studio's dark. */
+.nav:not(.is-open) {
+  --nav-paper: var(--p-bg);
+  --nav-edge: color-mix(in oklab, var(--p-ink) 9%, transparent);
+  background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom-color: transparent;
+}
+html.is-studio .nav:not(.is-open) {
+  --nav-paper: #150a22;
+  --nav-edge: color-mix(in oklab, var(--p-inv-ink) 10%, transparent);
+  background: transparent; border-bottom-color: transparent;
+}
+.nav:not(.is-open)::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; top: calc(-1 * env(safe-area-inset-top, 0px) - 60px);
+  z-index: -1; pointer-events: none;
+  background: var(--nav-paper); border-bottom: 1px solid var(--nav-edge);
+  transition: background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease);
+}
