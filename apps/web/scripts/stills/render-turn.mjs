@@ -1,14 +1,17 @@
 /**
  * Renders the home page's turn: the shoe turning a full circle on a
  * turntable, changing colourway as it goes (the brand look, then ember, then
- * oasis green), one frame every 3 degrees. The page scrubs through the frames
- * as the visitor scrolls (src/components/site/TurnHero.tsx).
+ * oasis green), one frame every 1.5 degrees, each with motion blur: the
+ * average of four renders across half a step of the turn, as a camera would
+ * record the shoe turning. The page scrubs through the frames as the visitor
+ * scrolls (src/components/site/TurnHero.tsx).
  *
  *   NODE_PATH=$(npm root -g) node scripts/stills/render-turn.mjs
- *   ... --frames 121 --size 1400x1050          (defaults)
+ *   ... --frames 241 --size 1400x1050 --blur 4 --shutter 0.5     (defaults)
  *
- * Writes public/images/shoe/spin/NNN.webp (the frames; NNN-sm.webp, 1100 pixels
- * across, for phones), spin/hero.webp and spin/hero-sm.webp (frame 0, sharper,
+ * Writes public/images/shoe/spin241/NNN.webp (the frames; NNN-sm.webp, 960
+ * pixels across, for phones, drawn from the same render), spin241/hero.webp
+ * and spin241/hero-sm.webp (frame 0, sharp and sharper,
  * for the first screen, cut to the shoe so the page can show it whole and as
  * large as its box allows), and src/components/site/turn-frames.ts (each
  * frame's box round the shoe, so the page can keep the shoe centred and fill
@@ -29,14 +32,17 @@ import { createRequire } from "node:module";
 
 const WEB = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 /** A new folder whenever the frames change their angles, so no browser mixes old frames it kept with new ones. */
-const DIR = "/images/shoe/spin";
+const DIR = "/images/shoe/spin241";
 const OUT = join(WEB, "public", DIR);
 const args = process.argv.slice(2);
 const opt = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : fallback;
 };
-const FRAMES = Number(opt("frames", "121")); // 0..360 degrees inclusive: the last frame is the side view again
+const FRAMES = Number(opt("frames", "241")); // 0..360 degrees inclusive: the last frame is the side view again
+/** Renders averaged into each frame, and the share of one step between frames that they span. */
+const BLUR = Number(opt("blur", "4"));
+const SHUTTER = Number(opt("shutter", "0.5"));
 /** Frames per 6 degrees: the colour changes below are written for one frame every 6 degrees. */
 const U = (FRAMES - 1) / 60;
 const [W, H] = opt("size", "1400x1050").split("x").map(Number);
@@ -45,14 +51,13 @@ const HERO = [2400, 1800];
 const STILL_PAD = 28;
 const heroOnly = args.includes("--hero-only");
 /**
- * The phone set: the same frames rendered 1100 pixels across. A phone draws the
- * shoe at most about 770 device pixels wide, so this set is never shown above
- * its own size (TurnHero.tsx: targetScale), at two thirds of the weight.
- * Every picture is rendered at the size it is saved: scaling a transparent
- * picture in ffmpeg leaves faint alpha across its empty ground (a ghost box on
- * the page) and makes the transparency costlier to store.
+ * The phone set: the same frames 960 pixels across, drawn from the large render
+ * in the page (premultiplied, so the transparency stays exact; ffmpeg's scaling
+ * would leave faint alpha across the empty ground, a ghost box on the page). A
+ * phone draws the shoe at most about 690 device pixels wide (TurnHero.tsx caps
+ * its scale at 2), so this set is never shown above its own size.
  */
-const SMALL = [1100, Math.round((1100 * H) / W)];
+const SMALL = [960, Math.round((960 * H) / W)];
 const model = opt("model", "/public/models/shoe.glb");
 
 // Colours as in src/features/configurator/parts.ts.
@@ -158,16 +163,23 @@ if (heroOnly) {
   boxes = JSON.parse(last.match(/TURN_BOXES[^=]*= (\[.*?\]);/s)[1]);
   looks = JSON.parse(last.match(/TURN_LOOKS[^=]*= (\[.*?\]);/s)[1]);
 }
+const angle = (f) => -(f / (FRAMES - 1)) * Math.PI * 2;
+const started = Date.now();
 for (let f = 0; f < (heroOnly ? 0 : FRAMES); f++) {
-  const spec = { colors: colorsAt(f), rotationY: -(f / (FRAMES - 1)) * Math.PI * 2, ...CAMERA };
+  // the renders of one frame: BLUR angles evenly across SHUTTER of a step, centred on the frame
+  const step = angle(1) - angle(0);
+  const rotations = Array.from({ length: BLUR }, (_, j) => angle(f) + ((j + 0.5) / BLUR - 0.5) * SHUTTER * step);
+  const spec = { colors: colorsAt(f), rotations, ...CAMERA, width: W, height: H, small: SMALL };
   const name = String(f).padStart(3, "0");
-  const box = await render({ ...spec, width: W, height: H }, join(tmp, `${f}.png`));
-  webp(join(tmp, `${f}.png`), join(OUT, `${name}.webp`), 80);
-  await render({ ...spec, width: SMALL[0], height: SMALL[1] }, join(tmp, `${f}-sm.png`));
-  webp(join(tmp, `${f}-sm.png`), join(OUT, `${name}-sm.webp`), 78);
+  const { png, small, box } = await page.evaluate((s) => window.renderBlurred(s), spec);
+  await writeFile(join(tmp, `${f}.png`), Buffer.from(png.split(",")[1], "base64"));
+  await writeFile(join(tmp, `${f}-sm.png`), Buffer.from(small.split(",")[1], "base64"));
+  webp(join(tmp, `${f}.png`), join(OUT, `${name}.webp`), 78);
+  webp(join(tmp, `${f}-sm.png`), join(OUT, `${name}-sm.webp`), 76);
   boxes.push(box);
   looks.push(lookAt(f));
-  process.stdout.write(`\rframe ${f + 1}/${FRAMES}`);
+  const left = Math.round(((Date.now() - started) / (f + 1)) * (FRAMES - f - 1) / 60000);
+  process.stdout.write(`\rframe ${f + 1}/${FRAMES} (about ${left} min left)`);
 }
 if (!heroOnly) process.stdout.write("\n");
 
@@ -191,7 +203,7 @@ for (const [name, scale] of [["hero", 1], ["hero-sm", 0.5]]) {
 const ts = `// Written by scripts/stills/render-turn.mjs: do not edit by hand.
 /** The folder of the turn's pictures. */
 export const TURN_DIR = "${DIR}";
-/** The turn's frames: TURN_DIR/NNN.webp, ${W} x ${H} (NNN-sm.webp for phones, ${SMALL[0]} x ${SMALL[1]}), one every ${360 / (FRAMES - 1)} degrees. */
+/** The turn's frames: TURN_DIR/NNN.webp, ${W} x ${H} (NNN-sm.webp for phones, ${SMALL[0]} x ${SMALL[1]}), one every ${360 / (FRAMES - 1)} degrees, each blurred across ${SHUTTER} of a step. */
 export const TURN_FRAMES = { count: ${FRAMES}, width: ${W}, height: ${H} } as const;
 /** Each frame's box round the shoe and its shadow, in frame pixels: [x, y, width, height]. */
 export const TURN_BOXES: readonly (readonly [number, number, number, number])[] = ${JSON.stringify(boxes)};

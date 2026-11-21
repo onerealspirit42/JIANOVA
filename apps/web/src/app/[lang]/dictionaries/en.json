@@ -20,8 +20,7 @@
       "steps": "Steps",
       "colors": "Colors",
       "brand": "Brand"
-    },
-    "quickActions": "Quick actions"
+    }
   },
   "footer": {
     "closeTitle": "Pick the first color for your shoe",

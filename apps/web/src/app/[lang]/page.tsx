@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
-import { ActionBar } from "@/components/site/ActionBar";
 import { ColorPicker } from "@/components/site/ColorPicker";
 import { KitScripts } from "@/components/site/KitScripts";
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -193,7 +192,6 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </main>
 
       <SiteFooter lang={lang} dict={dict} page="home" alternate={alternate} />
-      <ActionBar lang={lang} dict={dict} />
       <KitScripts />
     </>
   );

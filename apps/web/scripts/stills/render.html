@@ -144,6 +144,8 @@ window.renderStill = (spec) => {
   camera.position.set(...spec.camera);
   camera.lookAt(new THREE.Vector3(...spec.target));
   renderer.render(scene, camera);
+  // (raw: only render, for a caller that reads the canvas itself)
+  if (spec.raw) return null;
   if (spec.box) {
     // The frame as rendered, with the box round the shoe and its shadow (alpha above 24).
     const c = document.createElement("canvas");
@@ -194,6 +196,60 @@ window.renderStill = (spec) => {
   out.height = y1 - y0 + 1;
   out.getContext("2d").drawImage(c, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
   return out.toDataURL("image/png");
+};
+/**
+ * A turntable frame with motion blur: the shoe rendered at each of spec.rotations (angles spread
+ * across the shutter, round the frame's own) and the renders averaged, colour weighted by
+ * coverage (premultiplied), so a moving edge fades as a real camera would record it. Returns the
+ * frame as PNG, the same frame drawn smaller (spec.small: [width, height], for phones), and the
+ * box round the shoe and its shadow (alpha above 24) in the large frame's pixels.
+ */
+window.renderBlurred = (spec) => {
+  const { width: w, height: h } = spec;
+  const n = w * h;
+  const acc = new Float32Array(n * 4);
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const g = c.getContext("2d", { willReadFrequently: true });
+  for (const rotationY of spec.rotations) {
+    window.renderStill({ ...spec, rotationY, raw: true });
+    g.clearRect(0, 0, w, h);
+    g.drawImage(renderer.domElement, 0, 0);
+    const d = g.getImageData(0, 0, w, h).data;
+    for (let i = 0; i < n * 4; i += 4) {
+      const a = d[i + 3];
+      if (!a) continue;
+      acc[i] += d[i] * a; acc[i + 1] += d[i + 1] * a; acc[i + 2] += d[i + 2] * a; acc[i + 3] += a;
+    }
+  }
+  const k = spec.rotations.length;
+  const image = g.createImageData(w, h);
+  const out = image.data;
+  let x0 = w, y0 = h, x1 = 0, y1 = 0;
+  for (let i = 0, p = 0; i < n * 4; i += 4, p++) {
+    const sum = acc[i + 3];
+    const a = Math.round(sum / k);
+    // the shadow's faint tails (alpha 1 to 3) would draw a ghost of the ground's square on a light page
+    if (a <= 3) continue;
+    out[i] = Math.round(acc[i] / sum); out[i + 1] = Math.round(acc[i + 1] / sum); out[i + 2] = Math.round(acc[i + 2] / sum); out[i + 3] = a;
+    if (a > 24) {
+      const x = p % w, y = (p - x) / w;
+      if (x < x0) x0 = x; if (x > x1) x1 = x;
+      if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+  }
+  g.putImageData(image, 0, 0);
+  const result = { png: c.toDataURL("image/png"), box: [x0, y0, x1 - x0 + 1, y1 - y0 + 1] };
+  if (spec.small) {
+    const s = document.createElement("canvas");
+    [s.width, s.height] = spec.small;
+    const sg = s.getContext("2d");
+    sg.imageSmoothingEnabled = true;
+    sg.imageSmoothingQuality = "high";
+    sg.drawImage(c, 0, 0, s.width, s.height);
+    result.small = s.toDataURL("image/png");
+  }
+  return result;
 };
 window.modelSize = [size.x, size.y, size.z];
 window.ready = true;

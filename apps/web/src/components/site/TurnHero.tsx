@@ -43,7 +43,7 @@ const CROP_PAD = 14;
  * own thread in Safari and on phones), and the turn eases after it, so a wheel's steps and a
  * finger's jumps between scroll events become one gliding movement.
  */
-const CATCH_UP = 0.09;
+const CATCH_UP = 0.06;
 /** Once the scroll has rested this long (ms), the turn settles on the nearest whole frame. */
 const SETTLE_AFTER = 160;
 /**
@@ -52,7 +52,7 @@ const SETTLE_AFTER = 160;
  * them, and the turn stutters or goes blank. Under it the frames are decoded a little smaller and
  * the canvas scales them up while the shoe turns; at rest the sharp frame is drawn from its file.
  */
-const BUDGET = { phone: 72e6, full: 150e6 };
+const BUDGET = { phone: 96e6, full: 200e6 };
 
 type Box = readonly [number, number, number, number];
 /**
@@ -67,8 +67,8 @@ type Frame = { src: CanvasImageSource; from: Box; crop: Box };
  * scrolls, the words go up with it, the stage holds, darkens to a lit studio
  * (the header and the phone's action bar turn dark with it, html.is-studio),
  * and the shoe grows and turns a full circle while it changes colourway, under
- * three captions. 121 rendered frames, one every 3 degrees
- * (scripts/stills/render-turn.mjs), are cut to the shoe and decoded once as they
+ * three captions. 241 rendered frames, one every 1.5 degrees, each with motion
+ * blur (scripts/stills/render-turn.mjs), are cut to the shoe and decoded once as they
  * arrive, within a memory budget; one canvas shows the current frame, dissolving
  * into the next between whole frames, and is moved, grown and tilted by the
  * compositor. The page scrolls natively and the turn eases after it; the words
@@ -98,9 +98,9 @@ export function TurnHero(props: TurnHeroProps) {
     if (!lead || !pin || !view || !ground || !still || !canvas || !ctx) return;
 
     const { count, width: FW, height: FH } = TURN_FRAMES;
-    // a phone draws the shoe at most about 770 device pixels wide: the 1100-pixel set is enough there
+    // a phone draws the shoe at most about 690 device pixels wide: the 960-pixel set is enough there
     const small = window.innerWidth < 640;
-    const srcScale = small ? 1100 / FW : 1;
+    const srcScale = small ? 960 / FW : 1;
 
     // Each frame is cut to its box (and the shadow round it); the canvas is big enough for any of
     // them with the box centred, in frame pixels.
@@ -289,8 +289,9 @@ export function TurnHero(props: TurnHeroProps) {
       const pair = hi !== lo && frames[lo] !== null && frames[hi] !== null;
       const a = pair ? lo : nearest(Math.round(fpos));
       const b = pair ? hi : a;
-      // (frames 3 degrees apart dissolve through most of each step, so the turn reads as one movement)
-      const t = pair ? smooth(0.18, 0.82, fpos - lo) : 0;
+      // (frames 1.5 degrees apart, each already blurred by its own motion, dissolve through most of
+      // each step, so the turn reads as one movement)
+      const t = pair ? smooth(0.12, 0.88, fpos - lo) : 0;
 
       // At rest the sharp still shows; once the page moves (and a frame is ready), the canvas takes over.
       const atRest = p * run < 1 || a < 0;
@@ -398,7 +399,7 @@ export function TurnHero(props: TurnHeroProps) {
       request();
     };
 
-    // Frames load coarse to fine (every 60th, every 30th, …), so the turn shows from the start and sharpens.
+    // Frames load coarse to fine (the two ends, then every 120th, every 60th, …), so the turn shows from the start and sharpens.
     const order: number[] = [];
     for (let step = count - 1; ; step = Math.ceil(step / 2)) {
       for (let i = 0; i < count; i += step) if (!order.includes(i)) order.push(i);
@@ -486,7 +487,7 @@ export function TurnHero(props: TurnHeroProps) {
     const startLoading = () => {
       if (started) return;
       started = true;
-      for (let n = 0; n < (small ? 4 : 6); n++) loadNext();
+      for (let n = 0; n < (small ? 6 : 8); n++) loadNext();
     };
 
     // The words sit over the stage, outside it, so the still waits under them as before: their height

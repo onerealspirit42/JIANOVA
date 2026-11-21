@@ -35,6 +35,20 @@ html[lang="ar"] body { line-height: 1.75; }
 /* The logo in the bar and the footer: the lockup's own height. */
 .nav__logo svg { height: 26px; width: auto; }
 @media (max-width: 639px) { .nav__logo svg { height: 22px; } }
+/* Below the full header the main button and the menu button sit together at the end of the line,
+   in either direction (the kit pushes them with a left margin, which in Arabic would set the button
+   beside the logo). On the narrowest phones (under 360px) the line tightens to fit all three. */
+@media (max-width: 1023px) {
+  .nav:not(.is-open) .nav__actions { margin-left: 0; margin-inline-start: auto; }
+  .nav__toggle { margin-left: 0; margin-inline-start: auto; }
+  .nav:not(.is-open) .nav__actions + .nav__toggle { margin-inline-start: 0; }
+}
+@media (max-width: 359px) {
+  :root { --gut: 16px; }
+  .nav__bar { gap: 6px; }
+  .nav__logo svg { height: 18px; }
+  .nav:not(.is-open) .nav__actions .btn { padding-inline: 10px; font-size: 13px; }
+}
 .footer .nav__logo svg { height: 30px; }
 
 /* A heading block in a split column keeps to the top of its column. */
@@ -409,8 +423,7 @@ html[lang="ar"] .turn__cap { line-height: 1.45; padding-block: .3em .45em; lette
 @media (max-width: 639px) {
   .turn.is-live .turn__captions { top: 12%; }
   .turn__cap { max-width: calc(11ch + .8em); }
-  /* above the phone's action bar (64px), which shows once the hero's button has scrolled away */
-  .turn.is-live .turn__looks { bottom: calc(76px + env(safe-area-inset-bottom) + 3%); gap: var(--s-2) var(--s-4); font-size: 13px; }
+  .turn.is-live .turn__looks { bottom: calc(env(safe-area-inset-bottom) + 5%); gap: var(--s-2) var(--s-4); font-size: 13px; }
 }
 /* a short screen (a phone on its side): one line of caption under the header, clear of the shoe */
 @media (max-height: 520px) {
@@ -418,8 +431,10 @@ html[lang="ar"] .turn__cap { line-height: 1.45; padding-block: .3em .45em; lette
   .turn__cap { max-width: calc(32ch + .8em); font-size: clamp(22px, 7vh, 34px); }
   .turn.is-live .turn__looks { bottom: 4%; font-size: 12px; }
 }
-/* While the studio is dark, the header and the phone's action bar turn to dark glass, so the
-   stage runs from edge to edge (html.is-studio, set by TurnHero.tsx; the open menu keeps its paper). */
+/* While the studio is dark, the header turns to dark glass, its button to light, so the stage runs
+   from edge to edge (html.is-studio, set by TurnHero.tsx; the open menu keeps its paper). The header
+   holds the main button on every width: a phone has no bar at its foot, so nothing fixed sits by the
+   bottom edge, where Safari (iOS 26) would lay that bar's colour as a band under its address bar. */
 .nav { transition: background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease), color 400ms var(--lux-ease); }
 .nav__toggle { transition: color 400ms var(--lux-ease), border-color 400ms var(--lux-ease); }
 html.is-studio .nav:not(.is-open) {
@@ -433,54 +448,6 @@ html.is-studio .nav:not(.is-open) {
 html.is-studio .nav:not(.is-open) .btn--primary:hover { background: color-mix(in oklab, var(--action) 88%, var(--p-inv-bg)); }
 @media (prefers-reduced-transparency: reduce) {
   html.is-studio .nav:not(.is-open) { background: #120820; }
-}
-/* The phone's action bar as a floating piece of glass, not a strip across the screen: a
-   capsule inset from the edges and lifted off the foot, the page visible through it, blurred
-   (Apple's materials), with a bright top edge where the light catches it, and the main
-   button a pill inside it (outer radius = inner radius + the 6px between them). In the
-   studio it turns to dark glass and its button to light. It slides below the edge and fades
-   when the kit hides it. Solid where transparency is unwelcome or unsupported. */
-@media (max-width: 639px) {
-  :root:has(> body > nav.actionbar) { --bar: calc(76px + env(safe-area-inset-bottom)); }
-  .actionbar {
-    left: var(--gut); right: var(--gut); bottom: calc(10px + env(safe-area-inset-bottom));
-    height: 60px; padding: 6px; gap: 6px;
-    border: 1px solid color-mix(in oklab, #fff 55%, transparent); border-radius: 999px;
-    background: color-mix(in oklab, var(--p-bg) 92%, transparent);
-    box-shadow: 0 12px 32px -14px rgb(23 18 30 / .38), 0 2px 6px -2px rgb(23 18 30 / .12), inset 0 1px 0 rgb(255 255 255 / .6);
-  }
-  .actionbar .btn { height: 46px; border-radius: 999px; }
-  .actionbar[data-bar="hidden"] { transform: translateY(calc(100% + 16px + env(safe-area-inset-bottom))); opacity: 0; }
-  html.is-studio .actionbar {
-    --action: var(--p-inv-action); --action-ink: var(--p-inv-action-ink);
-    background: color-mix(in oklab, #120820 88%, transparent);
-    border-color: color-mix(in oklab, #fff 16%, transparent);
-    box-shadow: 0 12px 32px -14px rgb(0 0 0 / .6), inset 0 1px 0 rgb(255 255 255 / .14);
-  }
-}
-@media (max-width: 639px) and (scripting: enabled) {
-  .actionbar:not([data-bar="shown"], [data-bar="always"]) { transform: translateY(calc(100% + 16px + env(safe-area-inset-bottom))); opacity: 0; }
-}
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  @media (max-width: 639px) {
-    .actionbar {
-      background: color-mix(in oklab, var(--p-bg) 46%, transparent);
-      -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
-    }
-    html.is-studio .actionbar { background: color-mix(in oklab, #120820 42%, transparent); }
-  }
-}
-@media (max-width: 639px) and (prefers-reduced-transparency: reduce) {
-  .actionbar { background: var(--p-bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  html.is-studio .actionbar { background: #120820; }
-}
-/* (the kit's slide, with the fade and the colours added; reduced motion keeps the kit's none) */
-@media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
-  .actionbar {
-    transition: transform 420ms var(--lux-ease), opacity 260ms var(--lux-ease), visibility 0s,
-      background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease), box-shadow 400ms var(--lux-ease);
-  }
-  .actionbar[data-bar="hidden"] { transition: transform 320ms var(--ease), opacity 200ms var(--ease), visibility 0s 320ms; }
 }
 @media print {
   main > .hero.turn.is-live { display: flex; height: auto; min-height: 0; }
@@ -595,3 +562,8 @@ footer.closing:has(> .footer__wordmark) > .wrap { height: auto; min-height: calc
 footer.closing > .footer__wordmark { flex: none; margin-top: var(--s-8); color: var(--accent); }
 .footer__wordmark svg { display: block; width: 100%; height: auto; }
 @media (max-width: 639px) { footer.closing > .footer__wordmark { margin-top: var(--s-7); } }
+/* (on a phone the close is as tall as what it holds, like every section there: a whole screen would
+   open an empty band above "Pick the first color") */
+@media (max-width: 639px) {
+  footer.closing:has(> .footer__wordmark), footer.closing:has(> .footer__wordmark) > .wrap { min-height: 0; }
+}

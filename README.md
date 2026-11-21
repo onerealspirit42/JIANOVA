@@ -70,7 +70,7 @@ pnpm lint    # check code quality
 pnpm build   # create a production build
 pnpm --filter web build:model    # rebuild the 3D shoe (needs Python with numpy, pillow, opencv-python-headless)
 pnpm --filter web build:stills   # re-render the shoe stills (needs Playwright and ffmpeg)
-pnpm --filter web build:turn     # re-render the home page's turn, 121 frames (needs Playwright and ffmpeg)
+pnpm --filter web build:turn     # re-render the home page's turn: 241 frames with motion blur, about 35 minutes (needs Playwright and ffmpeg)
 pnpm --filter web build:logo     # rewrite the logo files and icons
 pnpm --filter web build:fonts    # copy the typefaces into public/fonts and write public/assets/fonts.css
 ```

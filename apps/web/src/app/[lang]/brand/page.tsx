@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Logo } from "@/components/brand/Logo";
 import { STAR_PATH, StarMark } from "@/components/brand/StarMark";
-import { ActionBar } from "@/components/site/ActionBar";
 import { KitScripts } from "@/components/site/KitScripts";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteNav } from "@/components/site/SiteNav";
@@ -202,7 +201,6 @@ export default async function BrandPage({ params }: PageProps<"/[lang]/brand">) 
       </main>
 
       <SiteFooter lang={lang} dict={dict} page="brand" alternate={alternate} />
-      <ActionBar lang={lang} dict={dict} />
       <KitScripts />
     </>
   );
