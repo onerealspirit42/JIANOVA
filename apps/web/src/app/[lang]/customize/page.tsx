@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { KitScripts } from "@/components/site/KitScripts";
 import { SiteNav } from "@/components/site/SiteNav";
 import { Configurator } from "@/features/configurator/Configurator";
 import { getDictionary, hasLocale } from "../dictionaries";
@@ -35,6 +36,7 @@ export default async function CustomizePage({
       <main id="top" className="designer">
         <Configurator messages={dict.configurator} />
       </main>
+      <KitScripts />
     </>
   );
 }

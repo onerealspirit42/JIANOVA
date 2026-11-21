@@ -47,7 +47,8 @@ There is no store yet. The requirements for the final model are in
   - `src/features/configurator` – the 3D designer (React Three Fiber, three.js, Zustand, Tailwind CSS)
   - `src/components/brand` – the logo (`Logo`, `StarMark`)
   - `src/components/site` – the home page's parts: the turning shoe (`TurnHero`), the colours,
-    and smooth scrolling for a wheel or trackpad (`SmoothScroll`, Lenis)
+    and the design system's scripts (`KitScripts`, rendered at the end of each page so they run
+    only once that page has hydrated). Pages scroll natively; the moving parts ease after the scroll
   - `public/assets` – the design system the marketing pages use (see Design below)
   - `public/images/shoe` – still pictures of the shoe, rendered from the 3D model
   - `public/models/shoe.glb` – the 3D shoe, every vertex tagged with its part
@@ -69,7 +70,7 @@ pnpm lint    # check code quality
 pnpm build   # create a production build
 pnpm --filter web build:model    # rebuild the 3D shoe (needs Python with numpy, pillow, opencv-python-headless)
 pnpm --filter web build:stills   # re-render the shoe stills (needs Playwright and ffmpeg)
-pnpm --filter web build:turn     # re-render the home page's turn, 61 frames (needs Playwright and ffmpeg)
+pnpm --filter web build:turn     # re-render the home page's turn, 121 frames (needs Playwright and ffmpeg)
 pnpm --filter web build:logo     # rewrite the logo files and icons
 pnpm --filter web build:fonts    # copy the typefaces into public/fonts and write public/assets/fonts.css
 ```

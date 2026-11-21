@@ -31,14 +31,22 @@ const LATIN =
 const LATIN_EXT =
   "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF";
 
+/**
+ * The Arabic subset's characters (Google Fonts' range; fontsource gives the Arabic subsets none).
+ * With it, a Latin page never fetches an Arabic face, and the Arabic faces can stand before the
+ * Latin "Fallback" faces in each stack, so Arabic letters never reach a fallback face: Safari
+ * draws them from the local font under it (Times New Roman and Arial have Arabic letters) at the
+ * fallback's adjusted size, smaller and cut at the edges.
+ */
+const ARABIC =
+  "U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC,U+102E0-102FB,U+10E60-10E7E,U+10EC2-10EC4,U+10EFC-10EFF,U+1EE00-1EEF1";
+
 /** family, fontsource package, weights, subsets (with their ranges), fallback category */
 const FAMILIES = [
   { family: "Instrument Serif", pkg: "instrument-serif", weights: [400], subsets: { latin: LATIN, "latin-ext": LATIN_EXT }, fallback: "serif" },
   { family: "Instrument Sans", pkg: "instrument-sans", weights: [400, 500], subsets: { latin: LATIN, "latin-ext": LATIN_EXT }, fallback: "sans-serif" },
-  // The Arabic subsets carry no range in fontsource: Latin characters fall
-  // through to the Latin family first in each stack.
-  { family: "Noto Naskh Arabic", pkg: "noto-naskh-arabic", weights: [400], subsets: { arabic: null } },
-  { family: "IBM Plex Sans Arabic", pkg: "ibm-plex-sans-arabic", weights: [400, 500], subsets: { arabic: null } },
+  { family: "Noto Naskh Arabic", pkg: "noto-naskh-arabic", weights: [400], subsets: { arabic: ARABIC } },
+  { family: "IBM Plex Sans Arabic", pkg: "ibm-plex-sans-arabic", weights: [400, 500], subsets: { arabic: ARABIC } },
 ];
 
 const outFonts = join(app, "public/fonts");

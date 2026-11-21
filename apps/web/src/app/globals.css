@@ -25,8 +25,8 @@
   --color-ink-500: #6b6575;
 
   /* The same faces as the kit: Instrument, with the Arabic partners. */
-  --font-sans: "Instrument Sans", "Instrument Sans Fallback", "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --font-display: "Instrument Serif", "Instrument Serif Fallback", "Noto Naskh Arabic", Georgia, serif;
+  --font-sans: "Instrument Sans", "IBM Plex Sans Arabic", "Instrument Sans Fallback", system-ui, sans-serif;
+  --font-display: "Instrument Serif", "Noto Naskh Arabic", "Instrument Serif Fallback", Georgia, serif;
 }
 
 /*

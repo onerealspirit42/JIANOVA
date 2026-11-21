@@ -12,8 +12,9 @@
   --p-accent: #241039; --p-accent-ink: #faf9fb; --p-action: #241039; --p-action-ink: #faf9fb;
   --p-inv-bg: #1c1029; --p-inv-surface: #291d36; --p-inv-ink: #faf9fb; --p-inv-muted: #9d97a5;
   --p-inv-accent: #faf9fb; --p-inv-accent-ink: #1c1029; --p-inv-action: #faf9fb; --p-inv-action-ink: #1c1029;
-  --font-display: "Instrument Serif", "Instrument Serif Fallback", "Noto Naskh Arabic", Georgia, serif;
-  --font-text: "Instrument Sans", "Instrument Sans Fallback", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  /* (each Arabic face before the Latin fallback face: scripts/fonts/build-fonts.mjs says why) */
+  --font-display: "Instrument Serif", "Noto Naskh Arabic", "Instrument Serif Fallback", Georgia, serif;
+  --font-text: "Instrument Sans", "IBM Plex Sans Arabic", "Instrument Sans Fallback", system-ui, sans-serif;
   --display-weight: 400;
   --display-tracking: -0.012em;
   --display-tracking-xl: -0.016em;
@@ -278,14 +279,6 @@ html:not([data-motion="off"]) .swatch:active { transform: scale(.985); }
 /* Text drawn the same on every Mac screen: the light-on-purple bands stay crisp. */
 html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-/* ------------------------------------------------------- smooth scrolling
-   A wheel or trackpad glides the page (SmoothScroll.tsx, Lenis); its rules from lenis.css. */
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
-.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
-.lenis.lenis-smooth iframe { pointer-events: none; }
-
 /* ------------------------------------------------------- page motion
    Moving between pages: the old page fades out and the new one rises softly
    in (cross-document view transitions; browsers without them just load the
@@ -309,35 +302,36 @@ html.lenis, html.lenis body { height: auto; }
    own entrance and the two moments their own motion; reduced motion, print
    and pages without script show everything at rest. */
 @media (prefers-reduced-motion: no-preference) {
-  /* Out of sight at once (no transition on the way out), then the arrival eases in. Words
-     rise 56px; a picture rises from a step further down, slightly smaller, while the shoe in
-     it settles from a closer view; the closing name climbs. Only position, size and fade
-     move, which the compositor runs without repainting: smooth on a phone. */
-  html:not([data-motion="off"]) .rv { opacity: 0; translate: 0 56px; }
-  html:not([data-motion="off"]) .rv:is(.part-frame, .color-frame, .phone-shot, .meaning-frame, .tile) { translate: 0 80px; scale: .94; }
-  html:not([data-motion="off"]) .rv:is(.part-frame, .color-frame) > img { scale: 1.12; }
-  html:not([data-motion="off"]) .rv.footer__wordmark { translate: 0 64px; }
+  /* Out of sight at once (no transition on the way out), then the arrival eases in, short and
+     small, so a fast scroll never meets an empty screen: words rise 28px; a picture rises a
+     little further, a touch smaller, while the shoe in it settles from a slightly closer view.
+     Only position, size and fade move, which the compositor runs without repainting. */
+  html:not([data-motion="off"]) .rv { opacity: 0; translate: 0 28px; }
+  html:not([data-motion="off"]) .rv:is(.part-frame, .color-frame, .phone-shot, .meaning-frame, .tile) { translate: 0 40px; scale: .97; }
+  html:not([data-motion="off"]) .rv:is(.part-frame, .color-frame) > img { scale: 1.06; }
+  html:not([data-motion="off"]) .rv.footer__wordmark { translate: 0 36px; }
   html:not([data-motion="off"]) .rv.is-in {
     opacity: 1; translate: none; scale: none;
     transition:
-      opacity 900ms var(--lux-ease) var(--rv-delay, 0ms),
-      translate 1200ms var(--lux-ease) var(--rv-delay, 0ms),
-      scale 1200ms var(--lux-ease) var(--rv-delay, 0ms);
+      opacity 600ms var(--lux-ease) var(--rv-delay, 0ms),
+      translate 800ms var(--lux-ease) var(--rv-delay, 0ms),
+      scale 800ms var(--lux-ease) var(--rv-delay, 0ms);
   }
-  html:not([data-motion="off"]) .rv.is-in:is(.part-frame, .color-frame) > img { scale: 1; transition: scale 1400ms var(--lux-ease) var(--rv-delay, 0ms); }
+  html:not([data-motion="off"]) .rv.is-in:is(.part-frame, .color-frame) > img { scale: 1; transition: scale 900ms var(--lux-ease) var(--rv-delay, 0ms); }
   /* Pictures fade in as they arrive instead of appearing line by line. */
   html:not([data-motion="off"]) img.is-loading { opacity: 0; }
-  html:not([data-motion="off"]) img.is-arrived { transition: opacity 900ms var(--lux-ease); }
+  html:not([data-motion="off"]) img.is-arrived { transition: opacity 500ms var(--lux-ease); }
 }
 @media print {
   .rv, .rv > img, img.is-loading { opacity: 1 !important; translate: none !important; scale: none !important; }
 }
 
-/* The close-ups drift inside their frames as the page scrolls past (KitScripts.tsx draws the
-   same drift where the browser cannot tie an animation to the scroll): down 6% as a frame comes
-   in, up 6% as it leaves, a little larger than the frame so no edge shows. */
+/* The close-ups drift inside their frames as the page scrolls past: down 6% as a frame comes in,
+   up 6% as it leaves, a little larger than the frame so no edge shows. Only where the browser ties
+   the drift to the scroll itself, and only with a mouse or trackpad: a phone keeps its pictures
+   still, so nothing on its screen can trail the finger. */
 @supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
     html:not([data-motion="off"]) img[data-parallax] { animation: jv-drift linear both; animation-timeline: view(); animation-range: cover; }
   }
 }
@@ -386,15 +380,22 @@ main > .hero.turn.is-live { display: block; height: calc(100vh + 250vh); height:
 .turn.is-live .turn__view { position: absolute; inset: 0 0 auto; display: block; height: 100vh; height: 100svh; }
 .turn.is-live .turn__rest { position: absolute; inset: 0; margin-inline: auto; padding-top: var(--lead-h, 0px); padding-bottom: calc(var(--hpadb) + var(--bar)); }
 .turn.is-live .hero__stage { min-height: 160px; }
-.turn.is-live .turn__captions { display: block; position: absolute; z-index: 3; inset-inline: var(--gut); top: 13%; pointer-events: none; text-align: center; }
+/* The tail: the next section rises in over the end of the turn while the stage still holds, its
+   heading arriving just below the shoe, so the handover never shows an empty screen (TurnHero
+   measures how far: --turn-tail). It has no ground of its own, so the stage shows through its top. */
+main > .hero.turn.is-live + section { margin-top: calc(-1 * var(--turn-tail, 0px)); position: relative; z-index: 3; }
+.turn.is-live .turn__captions { display: block; position: absolute; z-index: 3; inset-inline: var(--gut); top: calc(13% - .2em); pointer-events: none; text-align: center; }
+/* (each caption keeps room round its words, so a glyph that reaches past its line, as Arabic
+   letters do, is never cut where Safari draws the caption on a layer of its own) */
 .turn__cap {
-  position: absolute; inset-inline: 0; top: 0; margin: 0 auto; max-width: 14ch; opacity: 0;
+  position: absolute; inset-inline: 0; top: 0; margin: 0 auto; max-width: calc(14ch + .8em); padding: .2em .4em; opacity: 0;
   font: var(--display-weight) clamp(38px, 5.4vw, 88px) / 1.04 var(--font-display); letter-spacing: var(--display-tracking);
-  color: #fff; text-wrap: balance; will-change: transform, opacity;
+  color: #fff; text-wrap: balance;
 }
-html[lang="ar"] .turn__cap { line-height: 1.3; letter-spacing: 0; }
+/* (Naskh letters reach far below the line: the Arabic caption leaves them room inside its box) */
+html[lang="ar"] .turn__cap { line-height: 1.45; padding-block: .3em .45em; letter-spacing: 0; }
 /* on a wide screen each caption keeps to one line, clear of the shoe as it grows (laptops included) */
-@media (min-width: 1024px) { .turn__cap { max-width: 26ch; } }
+@media (min-width: 1024px) { .turn__cap { max-width: calc(26ch + .8em); } }
 .turn.is-live .turn__looks {
   display: flex; justify-content: center; flex-wrap: wrap; gap: var(--s-3) var(--s-5);
   position: absolute; z-index: 3; inset-inline: var(--gut); bottom: 6%;
@@ -407,14 +408,14 @@ html[lang="ar"] .turn__cap { line-height: 1.3; letter-spacing: 0; }
 .turn__looks li.is-on .turn__dot { transform: scale(1.4); }
 @media (max-width: 639px) {
   .turn.is-live .turn__captions { top: 12%; }
-  .turn__cap { max-width: 11ch; }
+  .turn__cap { max-width: calc(11ch + .8em); }
   /* above the phone's action bar (64px), which shows once the hero's button has scrolled away */
-  .turn.is-live .turn__looks { bottom: calc(64px + env(safe-area-inset-bottom) + 3.5%); gap: var(--s-2) var(--s-4); font-size: 13px; }
+  .turn.is-live .turn__looks { bottom: calc(76px + env(safe-area-inset-bottom) + 3%); gap: var(--s-2) var(--s-4); font-size: 13px; }
 }
 /* a short screen (a phone on its side): one line of caption under the header, clear of the shoe */
 @media (max-height: 520px) {
   .turn.is-live .turn__captions { top: calc(var(--nav) + var(--s-3)); }
-  .turn__cap { max-width: 32ch; font-size: clamp(22px, 7vh, 34px); }
+  .turn__cap { max-width: calc(32ch + .8em); font-size: clamp(22px, 7vh, 34px); }
   .turn.is-live .turn__looks { bottom: 4%; font-size: 12px; }
 }
 /* While the studio is dark, the header and the phone's action bar turn to dark glass, so the
@@ -433,12 +434,53 @@ html.is-studio .nav:not(.is-open) .btn--primary:hover { background: color-mix(in
 @media (prefers-reduced-transparency: reduce) {
   html.is-studio .nav:not(.is-open) { background: #120820; }
 }
+/* The phone's action bar as a floating piece of glass, not a strip across the screen: a
+   capsule inset from the edges and lifted off the foot, the page visible through it, blurred
+   (Apple's materials), with a bright top edge where the light catches it, and the main
+   button a pill inside it (outer radius = inner radius + the 6px between them). In the
+   studio it turns to dark glass and its button to light. It slides below the edge and fades
+   when the kit hides it. Solid where transparency is unwelcome or unsupported. */
 @media (max-width: 639px) {
-  html.is-studio .actionbar { --action: var(--p-inv-action); --action-ink: var(--p-inv-action-ink); background: transparent; border-top-color: transparent; }
+  :root:has(> body > nav.actionbar) { --bar: calc(76px + env(safe-area-inset-bottom)); }
+  .actionbar {
+    left: var(--gut); right: var(--gut); bottom: calc(10px + env(safe-area-inset-bottom));
+    height: 60px; padding: 6px; gap: 6px;
+    border: 1px solid color-mix(in oklab, #fff 55%, transparent); border-radius: 999px;
+    background: color-mix(in oklab, var(--p-bg) 92%, transparent);
+    box-shadow: 0 12px 32px -14px rgb(23 18 30 / .38), 0 2px 6px -2px rgb(23 18 30 / .12), inset 0 1px 0 rgb(255 255 255 / .6);
+  }
+  .actionbar .btn { height: 46px; border-radius: 999px; }
+  .actionbar[data-bar="hidden"] { transform: translateY(calc(100% + 16px + env(safe-area-inset-bottom))); opacity: 0; }
+  html.is-studio .actionbar {
+    --action: var(--p-inv-action); --action-ink: var(--p-inv-action-ink);
+    background: color-mix(in oklab, #120820 88%, transparent);
+    border-color: color-mix(in oklab, #fff 16%, transparent);
+    box-shadow: 0 12px 32px -14px rgb(0 0 0 / .6), inset 0 1px 0 rgb(255 255 255 / .14);
+  }
 }
-/* (the kit's own transitions, with the colours added; reduced motion keeps the kit's none) */
+@media (max-width: 639px) and (scripting: enabled) {
+  .actionbar:not([data-bar="shown"], [data-bar="always"]) { transform: translateY(calc(100% + 16px + env(safe-area-inset-bottom))); opacity: 0; }
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  @media (max-width: 639px) {
+    .actionbar {
+      background: color-mix(in oklab, var(--p-bg) 46%, transparent);
+      -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
+    }
+    html.is-studio .actionbar { background: color-mix(in oklab, #120820 42%, transparent); }
+  }
+}
+@media (max-width: 639px) and (prefers-reduced-transparency: reduce) {
+  .actionbar { background: var(--p-bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  html.is-studio .actionbar { background: #120820; }
+}
+/* (the kit's slide, with the fade and the colours added; reduced motion keeps the kit's none) */
 @media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
-  .actionbar { transition: transform 240ms var(--ease), visibility 0s, background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease); }
+  .actionbar {
+    transition: transform 420ms var(--lux-ease), opacity 260ms var(--lux-ease), visibility 0s,
+      background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease), box-shadow 400ms var(--lux-ease);
+  }
+  .actionbar[data-bar="hidden"] { transition: transform 320ms var(--ease), opacity 200ms var(--ease), visibility 0s 320ms; }
 }
 @media print {
   main > .hero.turn.is-live { display: flex; height: auto; min-height: 0; }
@@ -511,14 +553,24 @@ main #steps[data-moment].is-live .mo-pc__visual.is-past { transform: translate3d
 }
 
 /* ------------------------------------------------------------ statement, held
-   The statement holds in the middle of the screen while the section scrolls past, and
-   its words light one by one (moments/word-highlight/moment.js, opts.pin); on a phone
-   the type is set large enough to fill the screen. */
-main > #idea.is-pinned { height: calc(100vh + 130vh); height: calc(100svh + 130svh); min-height: 0; padding: 0; display: block; }
+   The statement holds in the middle of the screen (below the bar) while the section scrolls
+   past, and its words light one by one (moments/word-highlight/moment.js, opts.pin); on a
+   phone the type is set large enough to fill the screen. The block that holds is the
+   statement itself, its height measured by the script (--idea-h): it rises into the middle,
+   stays for 130% of a screen of scroll, and lets go with the next section right below it,
+   so no empty screen ever follows. */
+main > #idea.is-pinned {
+  height: calc(var(--idea-h, 100vh) + 130vh); height: calc(var(--idea-h, 100svh) + 130svh);
+  min-height: 0; padding: 0; display: block;
+}
 #idea.is-pinned > .wrap {
-  position: sticky; top: 0; height: 100vh; height: 100svh;
-  display: flex; flex-direction: column; justify-content: center; gap: var(--s-5);
-  padding-top: var(--nav); padding-bottom: var(--s-6);
+  /* (as tall as the statement, never the section: the section's height is taken from it) */
+  height: auto; min-height: 0; flex: none;
+  position: sticky;
+  top: max(var(--nav), calc(var(--nav) + (100vh - var(--nav) - var(--idea-h, 100vh)) / 2));
+  top: max(var(--nav), calc(var(--nav) + (100svh - var(--nav) - var(--idea-h, 100svh)) / 2));
+  display: flex; flex-direction: column; gap: var(--s-5);
+  padding-block: var(--s-6);
 }
 #idea .mo-wh .mo-w { color: color-mix(in oklab, var(--ink) 22%, var(--bg)); }
 #idea .mo-wh .mo-w.is-on { color: var(--ink); }

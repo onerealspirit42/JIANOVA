@@ -1,14 +1,14 @@
 /**
  * Renders the home page's turn: the shoe turning a full circle on a
  * turntable, changing colourway as it goes (the brand look, then ember, then
- * oasis green), one frame every 6 degrees. The page scrubs through the frames
+ * oasis green), one frame every 3 degrees. The page scrubs through the frames
  * as the visitor scrolls (src/components/site/TurnHero.tsx).
  *
  *   NODE_PATH=$(npm root -g) node scripts/stills/render-turn.mjs
- *   ... --frames 61 --size 1400x1050          (defaults)
+ *   ... --frames 121 --size 1400x1050          (defaults)
  *
- * Writes public/images/shoe/turn/NN.webp (the frames; NN-sm.webp, 1100 pixels
- * across, for phones), turn/hero.webp and turn/hero-sm.webp (frame 0, sharper,
+ * Writes public/images/shoe/spin/NNN.webp (the frames; NNN-sm.webp, 1100 pixels
+ * across, for phones), spin/hero.webp and spin/hero-sm.webp (frame 0, sharper,
  * for the first screen, cut to the shoe so the page can show it whole and as
  * large as its box allows), and src/components/site/turn-frames.ts (each
  * frame's box round the shoe, so the page can keep the shoe centred and fill
@@ -28,13 +28,17 @@ import { tmpdir } from "node:os";
 import { createRequire } from "node:module";
 
 const WEB = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const OUT = join(WEB, "public/images/shoe/turn");
+/** A new folder whenever the frames change their angles, so no browser mixes old frames it kept with new ones. */
+const DIR = "/images/shoe/spin";
+const OUT = join(WEB, "public", DIR);
 const args = process.argv.slice(2);
 const opt = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : fallback;
 };
-const FRAMES = Number(opt("frames", "61")); // 0..360 degrees inclusive: the last frame is the side view again
+const FRAMES = Number(opt("frames", "121")); // 0..360 degrees inclusive: the last frame is the side view again
+/** Frames per 6 degrees: the colour changes below are written for one frame every 6 degrees. */
+const U = (FRAMES - 1) / 60;
 const [W, H] = opt("size", "1400x1050").split("x").map(Number);
 const HERO = [2400, 1800];
 /** Frame pixels kept round frame 0's box when the first-screen still is cut (rounded out to sevens, so both still sizes cut on whole pixels). */
@@ -65,10 +69,10 @@ const LOOKS = [
   look("chalk", "ember", "ember", "midnight", "ember", "chalk", "midnight"),
   look("oasis", "chalk", "chalk", "midnight", "oasis", "chalk", "midnight"),
 ];
-/** Frames where each change of look starts; the details change first, then the upper. */
-const CHANGES = [6, 30];
+/** Where each change of look starts (in 6-degree steps); the details change first, then the upper. */
+const CHANGES = [6 * U, 30 * U];
 const ORDER = { laces: 0, tabs: 1, heel: 2, upper: 3, lining: 4, midsole: 4, outsole: 4 };
-const SPAN = 5; // frames each part takes to change
+const SPAN = 5 * U; // frames each part takes to change
 
 // Colour maths: sRGB hex <-> OKLab, so a change passes through clean colours.
 const toLin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
@@ -93,7 +97,7 @@ function colorsAt(frame) {
   for (const part of PARTS) {
     let lab = hexToLab(LOOKS[0][part]);
     CHANGES.forEach((start, i) => {
-      const t = Math.min(1, Math.max(0, (frame - start - ORDER[part] * 1.2) / SPAN));
+      const t = Math.min(1, Math.max(0, (frame - start - ORDER[part] * 1.2 * U) / SPAN));
       if (t <= 0) return;
       const to = hexToLab(LOOKS[i + 1][part]);
       lab = lab.map((v, k) => v + (to[k] - v) * smooth(t));
@@ -103,7 +107,7 @@ function colorsAt(frame) {
   return out;
 }
 /** Which look a frame shows (for the page's colourway marker): the change counts once half done. */
-const lookAt = (frame) => CHANGES.filter((start) => frame >= start + 4).length;
+const lookAt = (frame) => CHANGES.filter((start) => frame >= start + 4 * U).length;
 
 // The turntable camera: a little above the shoe, far enough for the side view
 // (and its shadow) to fill about 86% of the width. The toe turns toward the
@@ -156,7 +160,7 @@ if (heroOnly) {
 }
 for (let f = 0; f < (heroOnly ? 0 : FRAMES); f++) {
   const spec = { colors: colorsAt(f), rotationY: -(f / (FRAMES - 1)) * Math.PI * 2, ...CAMERA };
-  const name = String(f).padStart(2, "0");
+  const name = String(f).padStart(3, "0");
   const box = await render({ ...spec, width: W, height: H }, join(tmp, `${f}.png`));
   webp(join(tmp, `${f}.png`), join(OUT, `${name}.webp`), 80);
   await render({ ...spec, width: SMALL[0], height: SMALL[1] }, join(tmp, `${f}-sm.png`));
@@ -185,13 +189,15 @@ for (const [name, scale] of [["hero", 1], ["hero-sm", 0.5]]) {
 }
 
 const ts = `// Written by scripts/stills/render-turn.mjs: do not edit by hand.
-/** The turn's frames: public/images/shoe/turn/NN.webp, ${W} x ${H} (NN-sm.webp for phones, ${SMALL[0]} x ${SMALL[1]}), one every ${360 / (FRAMES - 1)} degrees. */
+/** The folder of the turn's pictures. */
+export const TURN_DIR = "${DIR}";
+/** The turn's frames: TURN_DIR/NNN.webp, ${W} x ${H} (NNN-sm.webp for phones, ${SMALL[0]} x ${SMALL[1]}), one every ${360 / (FRAMES - 1)} degrees. */
 export const TURN_FRAMES = { count: ${FRAMES}, width: ${W}, height: ${H} } as const;
 /** Each frame's box round the shoe and its shadow, in frame pixels: [x, y, width, height]. */
 export const TURN_BOXES: readonly (readonly [number, number, number, number])[] = ${JSON.stringify(boxes)};
 /** Which look each frame shows: 0 brand (royal purple), 1 ember, 2 oasis green. */
 export const TURN_LOOKS: readonly number[] = ${JSON.stringify(looks)};
-/** The part of frame 0 the first-screen still shows, in frame pixels (turn/hero.webp shows it at ${HERO[0]}/${W} of its size, hero-sm.webp at ${HERO[0] / 2}/${W}). */
+/** The part of frame 0 the first-screen still shows, in frame pixels (TURN_DIR/hero.webp shows it at ${HERO[0]}/${W} of its size, hero-sm.webp at ${HERO[0] / 2}/${W}). */
 export const TURN_STILL: readonly [number, number, number, number] = ${JSON.stringify(still)};
 `;
 await writeFile(join(WEB, "src/components/site/turn-frames.ts"), ts);

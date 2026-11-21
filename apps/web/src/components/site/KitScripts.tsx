@@ -50,14 +50,19 @@ const SPECULATION_RULES = {
   ],
 };
 
-/** How long a reveal takes (jianova.css: 1400 ms) plus room for its delay. */
-const REVEAL_MS = 1500;
+/** How long a reveal takes (jianova.css: 900 ms) plus room for its delay. */
+const REVEAL_MS = 1000;
 
 /**
  * Loads the kit's scripts once React has hydrated the page. The scripts
  * rewrite parts of the page (they split the statement into words and move
  * the steps' pictures), so running them before hydration would make React's
- * copy of the page disagree with the HTML.
+ * copy of the page disagree with the HTML: React then throws the page away
+ * and draws it again, and everything the scripts did is lost.
+ *
+ * Render it inside each page, after the page's own markup, never in the
+ * layout: the layout hydrates first, on its own, and a slower browser
+ * (Safari) would run the scripts while the page under it still hydrates.
  *
  * It also lets links to a section of the same page glide there instead of
  * jumping. Only clicks on such links glide: keyboard focus and the browser's
@@ -97,10 +102,7 @@ export function KitScripts() {
       if (!target) return;
       event.preventDefault();
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      // a page scrolling smoothly (SmoothScroll.tsx) glides there itself, stopping under the bar as the browser would
-      const lenis = window.__jianovaLenis;
-      if (lenis) lenis.scrollTo(target, { offset: -(parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0) });
-      else target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+      target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
       history.pushState(history.state, "", url.hash);
       // Move focus with the view, as a jump to an anchor does, without a second scroll.
       if (!target.matches("a, button, input, select, textarea, [tabindex]")) target.setAttribute("tabindex", "-1");
@@ -139,44 +141,9 @@ export function KitScripts() {
     return () => spy.disconnect();
   }, []);
 
-  // Pictures marked data-parallax drift inside their frames as the page scrolls past them: by the
-  // compositor where the browser can tie an animation to the scroll (jianova.css), here elsewhere.
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "off") return;
-    if (CSS.supports?.("animation-timeline: view()")) return;
-    const pictures = [...document.querySelectorAll<HTMLElement>("[data-parallax]")];
-    if (!pictures.length || !("IntersectionObserver" in window)) return;
-    const near = new Set<HTMLElement>();
-    let raf = 0;
-    const tick = () => {
-      raf = 0;
-      const vh = window.innerHeight;
-      near.forEach((el) => {
-        const r = (el.parentElement ?? el).getBoundingClientRect();
-        const p = Math.max(-1, Math.min(1, (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2)));
-        el.style.transform = `translate3d(0, ${(p * 6).toFixed(2)}%, 0) scale(1.14)`;
-      });
-    };
-    const request = () => {
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => (e.isIntersecting ? near.add(e.target as HTMLElement) : near.delete(e.target as HTMLElement)));
-        request();
-      },
-      { rootMargin: "15% 0px" },
-    );
-    pictures.forEach((el) => io.observe(el));
-    window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request);
-    return () => {
-      io.disconnect();
-      window.removeEventListener("scroll", request);
-      window.removeEventListener("resize", request);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+  // Pictures marked data-parallax drift inside their frames only where the browser ties the drift to
+  // the scroll itself (jianova.css: animation-timeline). Moved from script, they would trail the
+  // page by a frame, since Safari and phones scroll on their own thread, and shake.
 
   useEffect(() => {
     const root = document.documentElement;
@@ -201,7 +168,7 @@ export function KitScripts() {
           const el = entry.target as HTMLElement;
           reveal.unobserve(el);
           // Blocks arriving together step in one after another.
-          const delay = Math.min(order++, 4) * 110;
+          const delay = Math.min(order++, 3) * 80;
           el.style.setProperty("--rv-delay", `${delay}ms`);
           el.classList.add("is-in");
           // Once in place, the block goes back to its own styles (its hovers, its transitions).
@@ -213,7 +180,8 @@ export function KitScripts() {
           timers.add(timer);
         }
       },
-      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+      // (a block starts to arrive just before it comes into view, so a quick scroll finds it there)
+      { rootMargin: "0px 0px 4% 0px", threshold: 0 },
     );
     const fold = window.innerHeight * 0.92;
     const waiting: HTMLElement[] = [];

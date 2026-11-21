@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import "../globals.css";
-import { KitScripts } from "@/components/site/KitScripts";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 
 export async function generateStaticParams() {
@@ -103,7 +102,6 @@ export default async function RootLayout({
       </head>
       <body>
         {children}
-        <KitScripts />
       </body>
     </html>
   );

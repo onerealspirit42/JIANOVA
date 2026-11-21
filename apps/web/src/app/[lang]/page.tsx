@@ -2,9 +2,9 @@ import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import { ActionBar } from "@/components/site/ActionBar";
 import { ColorPicker } from "@/components/site/ColorPicker";
+import { KitScripts } from "@/components/site/KitScripts";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteNav } from "@/components/site/SiteNav";
-import { SmoothScroll } from "@/components/site/SmoothScroll";
 import { TurnHero } from "@/components/site/TurnHero";
 import { getDictionary, hasLocale } from "./dictionaries";
 
@@ -191,10 +191,10 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           </div>
         </section>
       </main>
-      <SmoothScroll />
 
       <SiteFooter lang={lang} dict={dict} page="home" alternate={alternate} />
       <ActionBar lang={lang} dict={dict} />
+      <KitScripts />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { lang } from "next/root-params";
+import { KitScripts } from "@/components/site/KitScripts";
 import { SiteNav } from "@/components/site/SiteNav";
 import { getDictionary, hasLocale } from "./dictionaries";
 
@@ -25,6 +26,7 @@ export default async function NotFound() {
           </div>
         </section>
       </main>
+      <KitScripts />
     </>
   );
 }
