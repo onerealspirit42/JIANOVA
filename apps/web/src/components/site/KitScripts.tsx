@@ -84,10 +84,11 @@ function rgba(css: string): [number, number, number, number] | null {
 }
 
 export function KitScripts() {
-  // The strip under Safari's address bar (iOS 26) takes the page's background colour, so a light
-  // strip sat under the dark sections. The page's own background follows whatever is at the foot of
-  // the screen (the sections carry their own light ground, jianova.css), so the strip always
-  // continues the page above it. theme-color follows too, for browsers that still read it.
+  // The strip under Safari's address bar (iOS 26 and later) takes its colour from a fixed element at
+  // the foot of the screen, else from the page's background, which Safari reads too seldom to follow
+  // the page. So a thin fixed strip sits at the foot (.foot-tint, jianova.css: only on iOS, almost
+  // all below the edge) in the colour of whatever is at the foot of the screen, and the page's own
+  // background and theme-color follow too, so Safari's strip always continues the page above it.
   useEffect(() => {
     const root = document.documentElement;
     const body = document.body;
@@ -104,33 +105,46 @@ export function KitScripts() {
       }
       for (const el of document.elementsFromPoint(x, y)) {
         if (el === body || el === root) break;
-        if (el.closest(".nav")) continue;
+        if (el.closest(".nav") || el.classList.contains("foot-tint")) continue;
         const c = rgba(getComputedStyle(el).backgroundColor);
         if (c && c[3] > 0.5) return c;
       }
       return base;
     };
+    const tint = document.createElement("div");
+    tint.className = "foot-tint";
+    tint.setAttribute("aria-hidden", "true");
+    body.append(tint);
     let last = "";
     let raf = 0;
     const update = () => {
-      raf = 0;
       const c = css(footColour());
       if (c === last) return;
       last = c;
-      body.style.backgroundColor = root.style.backgroundColor = c;
+      body.style.backgroundColor = root.style.backgroundColor = tint.style.backgroundColor = c;
       meta?.setAttribute("content", c);
     };
+    // (sampled for a moment after each scroll too: the turn's studio darkens just after the page moves)
+    let until = 0;
+    const loop = () => {
+      update();
+      raf = performance.now() < until ? requestAnimationFrame(loop) : 0;
+    };
     const request = () => {
-      if (!raf) raf = requestAnimationFrame(update);
+      until = performance.now() + 600;
+      if (!raf) raf = requestAnimationFrame(loop);
     };
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("resize", request);
+    window.addEventListener("jianova:stage", request);
     update();
     return () => {
       window.removeEventListener("scroll", request);
       window.removeEventListener("resize", request);
+      window.removeEventListener("jianova:stage", request);
       if (raf) cancelAnimationFrame(raf);
       body.style.backgroundColor = root.style.backgroundColor = "";
+      tint.remove();
     };
   }, []);
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { COLORS, type ColorId } from "@/features/configurator/parts";
 import { TURN_BOXES, TURN_DIR, TURN_FRAMES, TURN_LOOKS, TURN_STILL } from "./turn-frames";
+import type { Turn3D } from "./turn-3d";
 
 type TurnHeroProps = {
   title: string;
@@ -39,11 +40,14 @@ const TAIL_MAX = 0.15;
 /** Frame pixels kept round each frame's box when it is cut out (its soft shadow reaches 11 past it). */
 const CROP_PAD = 14;
 /**
- * How fast the drawn turn catches up with the scroll, in seconds: the page scrolls natively (on its
- * own thread in Safari and on phones), and the turn eases after it, so a wheel's steps and a
- * finger's jumps between scroll events become one gliding movement.
+ * How the drawn turn follows the scroll: a critically damped spring (Apple's "response", in seconds,
+ * with no bounce). The page scrolls natively (on its own thread in Safari and on phones) and the turn
+ * follows it with a speed that rises and falls smoothly, never jumping from one scroll event to the
+ * next and never stopping dead.
  */
-const CATCH_UP = 0.03;
+const RESPONSE = 0.16;
+/** The model the live turn draws (turn-3d.ts). */
+const MODEL = "/models/shoe.glb";
 /** Once the scroll has rested this long (ms), the turn settles on the nearest whole frame. */
 const SETTLE_AFTER = 160;
 /**
@@ -67,12 +71,15 @@ type Frame = { src: CanvasImageSource; from: Box; crop: Box };
  * scrolls, the words go up with it, the stage holds, darkens to a lit studio
  * (the header and the phone's action bar turn dark with it, html.is-studio),
  * and the shoe grows and turns a full circle while it changes colourway, under
- * three captions. 241 rendered frames, one every 1.5 degrees, each with motion
- * blur (scripts/stills/render-turn.mjs), are cut to the shoe and decoded once as they
- * arrive, within a memory budget; one canvas shows the current frame, dissolving
- * into the next between whole frames, and is moved, grown and tilted by the
- * compositor. The page scrolls natively and the turn eases after it; the words
- * sit outside the stage, so they move exactly with the page.
+ * three captions. The shoe is drawn live in 3D (turn-3d.ts: the same model,
+ * material, light and camera as the rendered frames), at the exact angle of the
+ * scroll, so the turn and its colour changes are continuous; the canvas is moved,
+ * grown and tilted by the compositor. Where WebGL is not available, or the browser
+ * drops the canvas, 241 rendered frames (one every 1.5 degrees, with motion blur:
+ * scripts/stills/render-turn.mjs) take over, decoded once within a memory budget and
+ * dissolving from one to the next. The page scrolls natively and the turn follows it
+ * on a critically damped spring; the words sit outside the stage, so they move
+ * exactly with the page.
  *
  * Without script, with reduced motion or with motion turned off, it is the
  * still hero: the words and frame 0 (TURN_DIR/hero.webp) on one screen.
@@ -259,7 +266,13 @@ export function TurnHero(props: TurnHeroProps) {
       canvas.style.display = "none";
     };
 
+    // The live turn (turn-3d.ts): the shoe drawn in 3D at any angle. While it loads, or where it
+    // cannot run, the still waits at rest and the frames above take over.
+    let live: Turn3D | null = null;
+    let liveCanvas: HTMLCanvasElement | null = null;
+
     let wasStudio = false;
+    let lastDark = 0;
     /** Lays out the stage for the scroll position p (the words use the page's own, raw position); sharp: how far the sharp frame has come in. */
     const draw = (raw: number, run: number, p: number, fpos: number, sharp: number) => {
       const { s0, rx, ry, tx, ty, phone, tail } = geometry;
@@ -270,6 +283,11 @@ export function TurnHero(props: TurnHeroProps) {
       // The studio: a lit stage behind the shoe, from the turn's start to just before the next section arrives.
       const dark = smooth(0.1, 0.24, p) * (1 - smooth(tail - 0.13, tail - 0.02, p));
       ground.style.opacity = dark.toFixed(3);
+      // (the colour at the foot of the screen changes with it: KitScripts.tsx tints Safari's strip)
+      if (Math.abs(dark - lastDark) > 0.02 || (dark !== lastDark && (dark === 0 || dark === 1))) {
+        lastDark = dark;
+        window.dispatchEvent(new Event("jianova:stage"));
+      }
       const studio = dark > 0.5;
       if (studio !== wasStudio) root.classList.toggle("is-studio", (wasStudio = studio));
 
@@ -281,6 +299,26 @@ export function TurnHero(props: TurnHeroProps) {
       const f = Math.round(fpos);
       if (looks) looks.style.opacity = (smooth(0.2, 0.3, p) * (1 - smooth(tail - 0.16, tail - 0.1, p))).toFixed(3);
       lookItems.forEach((li, i) => li.classList.toggle("is-on", TURN_LOOKS[f] === i));
+
+      if (live && liveCanvas) {
+        // The live shoe: at the exact angle of the scroll; placed and sized by the boxes of the two
+        // frames either side of it (as the frames were), so it moves exactly as they did.
+        const atRestLive = p * run < 1;
+        still.style.opacity = atRestLive ? "1" : "0";
+        liveCanvas.style.opacity = atRestLive ? "0" : "1";
+        if (atRestLive) return;
+        const e = easeInOut(smooth(0, 0.16, p));
+        const lo = Math.floor(fpos), hi = Math.min(count - 1, lo + 1), w = fpos - lo;
+        const [bx, by, bw, bh] = TURN_BOXES[lo].map((v, k) => v + (TURN_BOXES[hi][k] - v) * w);
+        const target = targets[lo] + (targets[hi] - targets[lo]) * w;
+        const ox = bx + bw / 2, oy = by + bh / 2;
+        const cx = rx + (tx - rx) * e, cy = ry + (ty - ry) * e;
+        const tilt = phone ? -7 * e * (1 - smooth(tail - 0.14, tail - 0.02, p)) : 0;
+        liveCanvas.style.transformOrigin = `${ox.toFixed(2)}px ${oy.toFixed(2)}px`;
+        liveCanvas.style.transform = `translate3d(${(cx - ox).toFixed(2)}px, ${(cy - oy).toFixed(2)}px, 0) rotate(${tilt.toFixed(3)}deg) scale(${(s0 + (target - s0) * e).toFixed(5)})`;
+        live.render(fpos / (count - 1));
+        return;
+      }
 
       // The frames to show: two neighbours dissolving in the middle of the step between them, or,
       // while the frames still arrive, the nearest one there is.
@@ -334,10 +372,15 @@ export function TurnHero(props: TurnHeroProps) {
       ctx.globalCompositeOperation = "source-over";
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (one >= 0) {
-        // one whole frame: the decoded one, and at rest the sharp one over it, coming into focus
+        // one whole frame: the decoded one, and at rest the sharp one coming into focus in its place
+        // (added, not laid over, as below: laid over, the two shadows would darken each other)
         const rr = one === a ? 1 : r;
-        if (crisp < 0.995) paint(one, rr, 1);
-        if (crisp > 0.005) paint(one, rr, crisp, true);
+        if (crisp < 0.995) paint(one, rr, 1 - crisp);
+        if (crisp > 0.005) {
+          ctx.globalCompositeOperation = "lighter";
+          paint(one, rr, crisp, true);
+          ctx.globalCompositeOperation = "source-over";
+        }
         if (!checked) {
           checked = true;
           ctx.globalAlpha = 1;
@@ -362,6 +405,7 @@ export function TurnHero(props: TurnHeroProps) {
     // next. When the scroll rests, the frame settles on a whole one (no dissolve left half done) and
     // the sharp frame comes into focus over it.
     let shown = -1;
+    let velocity = 0;
     let settle = 0;
     let sharp = 0;
     let lastScroll = 0;
@@ -375,15 +419,28 @@ export function TurnHero(props: TurnHeroProps) {
       const rect = section.getBoundingClientRect();
       const run = Math.max(1, rect.height - pin.offsetHeight);
       const raw = clamp(-rect.top / run);
-      shown = shown < 0 ? raw : shown + (raw - shown) * ease(dt, CATCH_UP);
-      if (Math.abs(raw - shown) * run < 0.25) shown = raw;
+      if (shown < 0) {
+        shown = raw;
+        velocity = 0;
+      } else {
+        // the critically damped spring, solved exactly for this step (stable at any frame rate)
+        const k = (2 * Math.PI) / RESPONSE, x = shown - raw, decay = Math.exp(-k * dt);
+        const nx = (x + (velocity + k * x) * dt) * decay;
+        velocity = (velocity - k * (velocity + k * x) * dt) * decay;
+        shown = raw + nx;
+      }
+      if (Math.abs(raw - shown) * run < 0.25 && Math.abs(velocity) * run < 6) {
+        shown = raw;
+        velocity = 0;
+      }
       const frameAt = clamp((shown - TURN_FROM) / (TURN_TO - TURN_FROM)) * (count - 1);
       const resting = shown === raw && now - lastScroll > SETTLE_AFTER;
-      const settleTo = resting ? Math.round(frameAt) - frameAt : 0;
+      // (the live shoe stands at any angle: only the frames settle on a whole one)
+      const settleTo = resting && !live ? Math.round(frameAt) - frameAt : 0;
       settle += (settleTo - settle) * ease(dt, 0.05);
       if (Math.abs(settleTo - settle) < 0.003) settle = settleTo;
       // the sharp frame fades in once the turn stands on a whole frame, and goes at once when it moves
-      const sharpTo = resting && settle === settleTo && soft() ? 1 : 0;
+      const sharpTo = resting && settle === settleTo && soft() && !live ? 1 : 0;
       sharp = sharpTo ? sharp + (1 - sharp) * ease(dt, 0.07) : 0;
       if (sharp > 0.995) sharp = 1;
       draw(raw, run, shown, clamp(frameAt + settle, 0, count - 1), sharp);
@@ -528,8 +585,51 @@ export function TurnHero(props: TurnHeroProps) {
       request();
     };
     canvas.addEventListener("contextrestored", onRestored);
-    window.addEventListener("scroll", startLoading, { once: true, passive: true });
-    const idleStart = window.setTimeout(startLoading, 300);
+    // The live turn first; the frames only where it cannot run (no WebGL, the model not arriving) or
+    // when the browser drops its canvas.
+    const toFrames = () => {
+      live?.dispose();
+      live = null;
+      liveCanvas?.remove();
+      liveCanvas = null;
+      canvas.style.display = "";
+      key = "";
+      startLoading();
+      request();
+    };
+    let begun = false;
+    const begin = () => {
+      if (begun || !alive) return;
+      begun = true;
+      const el = document.createElement("canvas");
+      el.className = "turn__frame turn__live";
+      el.setAttribute("aria-hidden", "true");
+      el.style.width = `${FW}px`;
+      el.style.height = `${FH}px`;
+      import("./turn-3d")
+        .then(({ createTurn3D }) => createTurn3D(el, MODEL, FW / FH, () => alive && toFrames()))
+        .then((t3) => {
+          if (!alive) return t3.dispose();
+          // drawn at the sharpest size the shoe is shown at (device pixels, up to 3 per CSS pixel)
+          const q3 = Math.min(1.6, Math.max(...targets) * Math.min(window.devicePixelRatio || 1, 3));
+          t3.setSize(Math.round(FW * q3), Math.round(FH * q3));
+          // (and one at its full size, so its buffers exist before the first scroll needs them)
+          t3.render(0);
+          canvas.after(el);
+          canvas.style.display = "none";
+          live = t3;
+          liveCanvas = el;
+          key = "";
+          request();
+        })
+        .catch(() => alive && toFrames());
+    };
+    // (at the first scroll, or once the page is idle after it has drawn: never while it loads)
+    window.addEventListener("scroll", begin, { once: true, passive: true });
+    const idleStart = window.setTimeout(() => {
+      if ("requestIdleCallback" in window) window.requestIdleCallback(begin, { timeout: 1200 });
+      else begin();
+    }, 400);
     measure();
     request();
     document.fonts?.ready.then(() => {
@@ -546,8 +646,10 @@ export function TurnHero(props: TurnHeroProps) {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       canvas.removeEventListener("contextrestored", onRestored);
-      window.removeEventListener("scroll", startLoading);
+      window.removeEventListener("scroll", begin);
       window.clearTimeout(idleStart);
+      live?.dispose();
+      liveCanvas?.remove();
       window.clearTimeout(idle);
       if (raf) cancelAnimationFrame(raf);
       for (const frame of frames) if (frame && frame.src instanceof ImageBitmap) frame.src.close();

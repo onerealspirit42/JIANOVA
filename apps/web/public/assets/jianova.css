@@ -573,3 +573,11 @@ footer.closing > .footer__wordmark { flex: none; margin-top: var(--s-8); color: 
    the page: KitScripts.tsx sets it to whatever is at the foot of the screen, which Safari (iOS 26)
    copies into the strip under its address bar. */
 main, body > footer { background-color: var(--bg); }
+/* The strip Safari (iOS 26 and later) reads for the colour under its address bar: fixed at the foot,
+   the full width, 12px tall with only 4px above the edge (the least it reads), in the colour of the
+   page there (KitScripts.tsx sets it), so it does not show itself. Only in iOS Safari. */
+.foot-tint { display: none; }
+@supports (-webkit-touch-callout: none) {
+  .foot-tint { display: block; position: fixed; left: 0; right: 0; bottom: -8px; height: 12px; z-index: 40; pointer-events: none; }
+  html:has(.nav.is-open) .foot-tint { display: none; }
+}
