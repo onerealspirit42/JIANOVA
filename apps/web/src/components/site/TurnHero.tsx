@@ -230,6 +230,35 @@ export function TurnHero(props: TurnHeroProps) {
     /** Whether the frames are decoded smaller than the canvas shows them (the sharp frame then comes in at rest). */
     const soft = () => qb < q * 0.97;
 
+    // The canvas is checked once, the first time it holds a whole frame: the middle of the shoe must
+    // be there. Where it is not (a browser that drew nothing, as Safari can when it runs short of
+    // graphics memory), the frames are shown as plain pictures instead, moved the same way: no
+    // dissolve, but the shoe never disappears. (A pixel reads as drawn above 40 of 255: Safari may
+    // add faint noise to what a page reads back from a canvas.)
+    let checked = false;
+    let pic: HTMLImageElement | null = null;
+    const drawsOn = (f: number) => {
+      try {
+        const [, , bw, bh] = TURN_BOXES[f];
+        const w = Math.max(4, Math.round(bw * q * 0.3)), h = Math.max(4, Math.round(bh * q * 0.3));
+        const px = ctx.getImageData(Math.round(canvas.width / 2 - w / 2), Math.round(canvas.height / 2 - h / 2), w, h).data;
+        for (let n = 3; n < px.length; n += 16) if (px[n] > 40) return true;
+        return false;
+      } catch {
+        return true;
+      }
+    };
+    const switchToPictures = () => {
+      pic = document.createElement("img");
+      pic.className = "turn__frame";
+      pic.alt = "";
+      pic.decoding = "sync";
+      pic.style.width = `${FW}px`;
+      pic.style.height = `${FH}px`;
+      canvas.after(pic);
+      canvas.style.display = "none";
+    };
+
     let wasStudio = false;
     /** Lays out the stage for the scroll position p (the words use the page's own, raw position); sharp: how far the sharp frame has come in. */
     const draw = (raw: number, run: number, p: number, fpos: number, sharp: number) => {
@@ -266,7 +295,7 @@ export function TurnHero(props: TurnHeroProps) {
       // At rest the sharp still shows; once the page moves (and a frame is ready), the canvas takes over.
       const atRest = p * run < 1 || a < 0;
       still.style.opacity = atRest ? "1" : "0";
-      canvas.style.opacity = atRest ? "0" : "1";
+      (pic ?? canvas).style.opacity = atRest ? "0" : "1";
       if (atRest) return;
 
       // Move from the rest place to the middle of the stage, growing, then hold there.
@@ -275,6 +304,19 @@ export function TurnHero(props: TurnHeroProps) {
       const cx = rx + (tx - rx) * e;
       const cy = ry + (ty - ry) * e;
       const tilt = phone ? -7 * e * (1 - smooth(tail - 0.14, tail - 0.02, p)) : 0;
+
+      if (pic) {
+        // plain pictures: the nearer whole frame, its box centred on the same point, at the same size
+        const f = t < 0.5 ? a : b;
+        const file = files[f];
+        if (!file) return;
+        if (pic.src !== file.src) pic.src = file.src;
+        const [bx, by, bw, bh] = TURN_BOXES[f];
+        const ox = bx + bw / 2, oy = by + bh / 2;
+        pic.style.transformOrigin = `${ox}px ${oy}px`;
+        pic.style.transform = `translate3d(${(cx - ox).toFixed(2)}px, ${(cy - oy).toFixed(2)}px, 0) rotate(${tilt.toFixed(3)}deg) scale(${size(f).toFixed(5)})`;
+        return;
+      }
       canvas.style.transform = `translate3d(${(cx - CW / 2).toFixed(2)}px, ${(cy - CH / 2).toFixed(2)}px, 0) rotate(${tilt.toFixed(3)}deg) scale(${size(a).toFixed(5)})`;
 
       const r = b === a ? 1 : size(b) / size(a);
@@ -291,6 +333,16 @@ export function TurnHero(props: TurnHeroProps) {
         const rr = one === a ? 1 : r;
         if (crisp < 0.995) paint(one, rr, 1);
         if (crisp > 0.005) paint(one, rr, crisp, true);
+        if (!checked) {
+          checked = true;
+          ctx.globalAlpha = 1;
+          if (!drawsOn(one)) {
+            switchToPictures();
+            key = "";
+            draw(raw, run, p, fpos, sharp);
+            return;
+          }
+        }
       } else {
         // added, not laid over: where both frames are solid the shoe stays solid as one gives way to the other
         paint(a, 1, 1 - t);
@@ -368,7 +420,7 @@ export function TurnHero(props: TurnHeroProps) {
         if (!c) return true;
         c.drawImage(bitmap, 0, 0, 16, 12);
         const px = c.getImageData(0, 0, 16, 12).data;
-        for (let n = 3; n < px.length; n += 4) if (px[n] > 0) return true;
+        for (let n = 3; n < px.length; n += 4) if (px[n] > 40) return true;
         return false;
       } catch {
         return true;
@@ -465,6 +517,12 @@ export function TurnHero(props: TurnHeroProps) {
       request();
     };
     window.addEventListener("resize", onResize);
+    // a canvas the browser dropped to save memory (Safari, a tab in the background) comes back empty: draw it again
+    const onRestored = () => {
+      key = "";
+      request();
+    };
+    canvas.addEventListener("contextrestored", onRestored);
     window.addEventListener("scroll", startLoading, { once: true, passive: true });
     const idleStart = window.setTimeout(startLoading, 1200);
     measure();
@@ -482,6 +540,7 @@ export function TurnHero(props: TurnHeroProps) {
       leadObserver.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
+      canvas.removeEventListener("contextrestored", onRestored);
       window.removeEventListener("scroll", startLoading);
       window.clearTimeout(idleStart);
       window.clearTimeout(idle);
@@ -491,7 +550,8 @@ export function TurnHero(props: TurnHeroProps) {
       section.style.removeProperty("--lead-h");
       after?.style.removeProperty("--turn-tail");
       root.classList.remove("is-studio");
-      lead.style.opacity = ground.style.opacity = still.style.opacity = canvas.style.opacity = canvas.style.transform = "";
+      pic?.remove();
+      lead.style.opacity = ground.style.opacity = still.style.opacity = canvas.style.opacity = canvas.style.transform = canvas.style.display = "";
     };
   }, []);
 
