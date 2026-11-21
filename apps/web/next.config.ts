@@ -30,6 +30,16 @@ const nextConfig: NextConfig = {
         source: "/:dir(images|models|brand)/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=3600, s-maxage=31536000" }],
       },
+      // The pages: kept at the edge (cleared on every deploy), but a browser asks again each time, so
+      // nobody keeps seeing the page from before a deploy.
+      {
+        source: "/:lang(en|ar)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=0, s-maxage=31536000, must-revalidate" }],
+      },
+      {
+        source: "/:lang(en|ar)/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=0, s-maxage=31536000, must-revalidate" }],
+      },
     ];
   },
   partialPrefetching: true,
