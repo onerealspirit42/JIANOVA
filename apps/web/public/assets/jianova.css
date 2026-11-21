@@ -573,11 +573,31 @@ footer.closing > .footer__wordmark { flex: none; margin-top: var(--s-8); color: 
    the page: KitScripts.tsx sets it to whatever is at the foot of the screen, which Safari (iOS 26)
    copies into the strip under its address bar. */
 main, body > footer { background-color: var(--bg); }
-/* The strip Safari (iOS 26 and later) reads for the colour under its address bar: fixed at the foot,
-   the full width, 12px tall with only 4px above the edge (the least it reads), in the colour of the
-   page there (KitScripts.tsx sets it), so it does not show itself. Only in iOS Safari. */
-.foot-tint { display: none; }
-@supports (-webkit-touch-callout: none) {
-  .foot-tint { display: block; position: fixed; left: 0; right: 0; bottom: -8px; height: 12px; z-index: 40; pointer-events: none; }
-  html:has(.nav.is-open) .foot-tint { display: none; }
+
+/* Nothing on the page lends Safari (iOS 26 and later) a colour for the areas under its status bar
+   and address bar, so, as on Wikipedia, the page itself runs under both, edge to edge. Safari takes
+   that colour from the background of a fixed element at the top or bottom edge, never from a
+   pseudo-element: so the header is see-through and its glass (the frosted paper, its hairline, the
+   dark glass in the studio) is drawn by its ::before, looking exactly as before; and nothing is
+   fixed at the foot. */
+.nav:not(.is-open) {
+  --nav-glass: color-mix(in oklab, var(--p-bg) 82%, transparent);
+  --nav-edge: color-mix(in oklab, var(--p-ink) 9%, transparent);
+  background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom-color: transparent;
+}
+html.is-studio .nav:not(.is-open) {
+  --nav-glass: color-mix(in oklab, #120820 58%, transparent);
+  --nav-edge: color-mix(in oklab, var(--p-inv-ink) 10%, transparent);
+  background: transparent; border-bottom-color: transparent;
+}
+.nav:not(.is-open)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--nav-glass); border-bottom: 1px solid var(--nav-edge);
+  -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%);
+  transition: background-color 400ms var(--lux-ease), border-color 400ms var(--lux-ease);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nav:not(.is-open) { --nav-glass: var(--p-bg); }
+  html.is-studio .nav:not(.is-open) { --nav-glass: #120820; }
+  .nav:not(.is-open)::before { -webkit-backdrop-filter: none; backdrop-filter: none; }
 }

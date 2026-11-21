@@ -84,11 +84,10 @@ function rgba(css: string): [number, number, number, number] | null {
 }
 
 export function KitScripts() {
-  // The strip under Safari's address bar (iOS 26 and later) takes its colour from a fixed element at
-  // the foot of the screen, else from the page's background, which Safari reads too seldom to follow
-  // the page. So a thin fixed strip sits at the foot (.foot-tint, jianova.css: only on iOS, almost
-  // all below the edge) in the colour of whatever is at the foot of the screen, and the page's own
-  // background and theme-color follow too, so Safari's strip always continues the page above it.
+  // The page runs under Safari's bars (jianova.css: nothing fixed lends them a colour). Where Safari
+  // still shows the page's own background (pulled past its top or end), that background is the colour
+  // of whatever is at the foot of the screen, so the page never ends in a band of another colour
+  // (the sections carry their own light ground, so this shows nowhere else); theme-color follows too.
   useEffect(() => {
     const root = document.documentElement;
     const body = document.body;
@@ -105,23 +104,19 @@ export function KitScripts() {
       }
       for (const el of document.elementsFromPoint(x, y)) {
         if (el === body || el === root) break;
-        if (el.closest(".nav") || el.classList.contains("foot-tint")) continue;
+        if (el.closest(".nav")) continue;
         const c = rgba(getComputedStyle(el).backgroundColor);
         if (c && c[3] > 0.5) return c;
       }
       return base;
     };
-    const tint = document.createElement("div");
-    tint.className = "foot-tint";
-    tint.setAttribute("aria-hidden", "true");
-    body.append(tint);
     let last = "";
     let raf = 0;
     const update = () => {
       const c = css(footColour());
       if (c === last) return;
       last = c;
-      body.style.backgroundColor = root.style.backgroundColor = tint.style.backgroundColor = c;
+      body.style.backgroundColor = root.style.backgroundColor = c;
       meta?.setAttribute("content", c);
     };
     // (sampled for a moment after each scroll too: the turn's studio darkens just after the page moves)
@@ -144,7 +139,6 @@ export function KitScripts() {
       window.removeEventListener("jianova:stage", request);
       if (raf) cancelAnimationFrame(raf);
       body.style.backgroundColor = root.style.backgroundColor = "";
-      tint.remove();
     };
   }, []);
 
